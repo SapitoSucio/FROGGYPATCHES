@@ -999,6 +999,22 @@ function setPlayButtonMode(mode) {
   btnPlay.innerHTML = '<span class="play-icon">↻</span> Iniciar Update';
 }
 
+function requestStartUpdate(showFeedback) {
+  if (!hasExternalBridge() || patchReady || patchingActive || updateRequested) {
+    return;
+  }
+  patchingActive = true;
+  updateRequested = true;
+  patchReady = false;
+  setPlayButtonMode('cancel');
+  setPatchLog('info', 'Conectando con servidor de parches...');
+  progressSpeed.textContent = 'iniciando';
+  invokeSimple('start_update');
+  if (showFeedback) {
+    showToast('Iniciando actualización...', '↻');
+  }
+}
+
 function animatePct(target) {
   const start = currentPct;
   const dur = 500;
@@ -1084,13 +1100,7 @@ document.getElementById('btn-play').addEventListener('click', () => {
     showToast('Cancelando actualización...', '⚐');
     return;
   }
-  invokeSimple('start_update');
-  patchingActive = true;
-  updateRequested = true;
-  patchReady = false;
-  setPlayButtonMode('cancel');
-  setPatchLog('info', 'Conectando con servidor de parches...');
-  showToast('Iniciando actualización...', '↻');
+  requestStartUpdate(true);
 });
 
 /* ── Enter key on inputs ── */
@@ -1183,6 +1193,7 @@ if (hasExternalBridge()) {
   setPatchLog('info', 'Conectado al cliente patcher. Esperando actualización...');
   setPatchCount('—', 'pendientes');
   progressSpeed.textContent = 'esperando';
+  setTimeout(() => requestStartUpdate(false), 200);
 } else {
   setPlayButtonMode('web');
   setPatchLog('info', 'Modo web: leyendo estado real desde plist.txt');
