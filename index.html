@@ -1188,18 +1188,40 @@ function notificationInProgress() {
 }
 
 /* Estado inicial auténtico */
-if (hasExternalBridge()) {
-  setPlayButtonMode('start');
-  setPatchLog('info', 'Conectado al cliente patcher. Esperando actualización...');
+function initPatcherStartup() {
   setPatchCount('—', 'pendientes');
-  progressSpeed.textContent = 'esperando';
-  setTimeout(() => requestStartUpdate(false), 200);
-} else {
-  setPlayButtonMode('web');
-  setPatchLog('info', 'Modo web: leyendo estado real desde plist.txt');
-  progressSpeed.textContent = 'modo web';
-  loadPatchListSummary();
+  if (hasExternalBridge()) {
+    setPlayButtonMode('start');
+    setPatchLog('info', 'Conectado al cliente patcher. Preparando actualización...');
+    progressSpeed.textContent = 'esperando bridge';
+    setTimeout(() => requestStartUpdate(false), 150);
+    return;
+  }
+
+  // Algunos entornos inyectan `external.invoke` ligeramente después del load.
+  let attempts = 0;
+  const maxAttempts = 40; // ~10s
+  const probe = setInterval(() => {
+    attempts += 1;
+    if (hasExternalBridge()) {
+      clearInterval(probe);
+      setPlayButtonMode('start');
+      setPatchLog('info', 'Bridge detectado. Iniciando actualización...');
+      progressSpeed.textContent = 'bridge detectado';
+      requestStartUpdate(false);
+      return;
+    }
+    if (attempts >= maxAttempts) {
+      clearInterval(probe);
+      setPlayButtonMode('web');
+      setPatchLog('info', 'Modo web: leyendo estado real desde plist.txt');
+      progressSpeed.textContent = 'modo web';
+      loadPatchListSummary();
+    }
+  }, 250);
 }
+
+initPatcherStartup();
 </script>
 </body>
 </html>
