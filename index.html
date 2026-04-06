@@ -927,24 +927,6 @@ function showToast(msg, icon = '⚑') {
   setTimeout(() => t.classList.remove('show'), 3800);
 }
 
-/* ── Patcher simulation ── */
-const patchMessages = [
-  ['info', 'Conectando con servidor de parches...'],
-  ['ok',   'Servidor de parches conectado'],
-  ['info', 'Verificando integridad de archivos...'],
-  ['warn', 'Descargando parche #870 (iteminfo)...'],
-  ['info', 'Verificando checksum CRC32...'],
-  ['ok',   'Parche #870 aplicado'],
-  ['warn', 'Descargando parche #871 (sprites)...'],
-  ['info', 'Verificando checksum CRC32...'],
-  ['ok',   'Parche #871 aplicado'],
-  ['warn', 'Descargando parche #872 (maps)...'],
-  ['info', 'Procesando file table...'],
-  ['ok',   'Parche #872 aplicado'],
-  ['ok',   'Cliente actualizado. ¡Bienvenido!'],
-];
-
-let patchStep = 0;
 let currentPct = 0;
 const patchLog = document.getElementById('patch-log');
 const progressFill = document.getElementById('progress-fill');
@@ -952,29 +934,69 @@ const progressPct = document.getElementById('progress-pct');
 const progressSpeed = document.getElementById('progress-speed');
 const btnPlay = document.getElementById('btn-play');
 const patchCount = document.getElementById('patch-count');
+const patchVer = document.getElementById('patch-ver');
 
-function advancePatch() {
-  if (patchStep >= patchMessages.length) return;
-  const [type, msg] = patchMessages[patchStep++];
+let patchingActive = false;
+let patchReady = false;
+let updateRequested = false;
+
+function hasExternalBridge() {
+  return !!(window.external && typeof window.external.invoke === 'function');
+}
+
+function externalInvoke(payload) {
+  if (!hasExternalBridge()) {
+    return;
+  }
+  window.external.invoke(payload);
+}
+
+function invokeSimple(cmd) {
+  externalInvoke(cmd);
+}
+
+function invokeJson(functionName, parameters) {
+  externalInvoke(JSON.stringify({ function: functionName, parameters: parameters }));
+}
+
+function humanFileSize(size) {
+  if (!size || size <= 0) return '0 B';
+  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
+  const i = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
+  const n = size / Math.pow(1024, i);
+  return `${n.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+}
+
+function setPatchLog(type, msg) {
   patchLog.innerHTML = '';
   const line = document.createElement('div');
   line.className = `patch-log-line ${type}`;
   line.textContent = msg;
   patchLog.appendChild(line);
+}
 
-  const targetPct = Math.round((patchStep / patchMessages.length) * 100);
-  animatePct(targetPct);
-  const speed = Math.round(800 + Math.random() * 1800);
-  progressSpeed.textContent = speed + ' KB/s';
+function setPatchCount(label, suffix) {
+  patchCount.innerHTML = `${label}<span>${suffix}</span>`;
+}
 
-  if (patchStep >= patchMessages.length) {
-    progressSpeed.textContent = '—';
-    patchCount.innerHTML = '3<span style="font-size:11px;color:var(--text-dim);font-family:\'Crimson Pro\',serif;font-weight:300;margin-left:3px;">parches</span>';
+function setPlayButtonMode(mode) {
+  if (mode === 'ready') {
     btnPlay.disabled = false;
     btnPlay.innerHTML = '<span class="play-icon">▶</span> ¡Jugar Ahora!';
-    showToast('Cliente listo. ¡Que comience la aventura!', '✦');
-    clearInterval(patchInterval);
+    return;
   }
+  if (mode === 'cancel') {
+    btnPlay.disabled = false;
+    btnPlay.innerHTML = '<span class="play-icon">■</span> Cancelar Update';
+    return;
+  }
+  if (mode === 'web') {
+    btnPlay.disabled = true;
+    btnPlay.innerHTML = '<span class="play-icon">🌐</span> Solo Vista Web';
+    return;
+  }
+  btnPlay.disabled = false;
+  btnPlay.innerHTML = '<span class="play-icon">↻</span> Iniciar Update';
 }
 
 function animatePct(target) {
@@ -992,8 +1014,26 @@ function animatePct(target) {
   requestAnimationFrame(step);
 }
 
-const patchInterval = setInterval(advancePatch, 900);
-advancePatch();
+async function loadPatchListSummary() {
+  try {
+    const response = await fetch('./plist.txt', { cache: 'no-store' });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const raw = await response.text();
+    const lines = raw
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith('//'));
+    setPatchCount(String(lines.length), 'pendientes');
+    setPatchLog('info', `Lista real cargada: ${lines.length} parche(s) en plist.txt`);
+    progressSpeed.textContent = 'lista verificada';
+  } catch (err) {
+    setPatchCount('—', 'sin datos');
+    setPatchLog('warn', 'No se pudo leer plist.txt en modo web.');
+    progressSpeed.textContent = 'sin conexión';
+  }
+}
 
 /* ── Players simulation ── */
 function updatePlayers() {
@@ -1012,16 +1052,45 @@ document.getElementById('btn-login').addEventListener('click', () => {
     showToast('Ingresa tu usuario y contraseña.', '⚠');
     return;
   }
-  showToast(`Bienvenido de regreso, ${u}!`, '✦');
+  if (hasExternalBridge()) {
+    invokeJson('login', { login: u, password: p });
+    showToast(`Autenticando a ${u}...`, '✦');
+    return;
+  }
+  showToast('Login disponible solo en el cliente patcher.', '⚑');
 });
 
 document.getElementById('btn-register').addEventListener('click', () => {
-  showToast('Redirigiendo al portal de registro...', '◈');
+  showToast('Abriendo portal de registro...', '◈');
+  window.open('https://example.com/register', '_blank', 'noopener,noreferrer');
 });
 
 document.getElementById('btn-play').addEventListener('click', () => {
-  if (!document.getElementById('btn-play').disabled)
+  if (!hasExternalBridge()) {
+    showToast('Esta vista web no puede iniciar el cliente.', '⚑');
+    return;
+  }
+  if (patchReady) {
+    invokeSimple('play');
     showToast('Iniciando cliente de Ragnarok...', '▶');
+    return;
+  }
+  if (patchingActive) {
+    invokeSimple('cancel_update');
+    patchingActive = false;
+    updateRequested = false;
+    setPlayButtonMode('start');
+    setPatchLog('warn', 'Cancelación solicitada por el usuario...');
+    showToast('Cancelando actualización...', '⚐');
+    return;
+  }
+  invokeSimple('start_update');
+  patchingActive = true;
+  updateRequested = true;
+  patchReady = false;
+  setPlayButtonMode('cancel');
+  setPatchLog('info', 'Conectando con servidor de parches...');
+  showToast('Iniciando actualización...', '↻');
 });
 
 /* ── Enter key on inputs ── */
@@ -1030,6 +1099,96 @@ document.getElementById('btn-play').addEventListener('click', () => {
     if (e.key === 'Enter') document.getElementById('btn-login').click();
   });
 });
+
+/* ── Callbacks de rpatchur (estado real) ── */
+function patchingStatusReady() {
+  patchReady = true;
+  patchingActive = false;
+  updateRequested = false;
+  animatePct(100);
+  progressSpeed.textContent = '—';
+  setPatchLog('ok', 'Cliente actualizado. ¡Bienvenido!');
+  setPatchCount('0', 'pendientes');
+  setPlayButtonMode('ready');
+  showToast('Cliente listo. ¡Que comience la aventura!', '✦');
+}
+
+function patchingStatusError(errorMsg) {
+  patchingActive = false;
+  updateRequested = false;
+  patchReady = false;
+  setPatchLog('warn', `Error: ${errorMsg}`);
+  progressSpeed.textContent = 'error';
+  setPlayButtonMode('start');
+  showToast('Falló la actualización. Revisa el log.', '⚠');
+}
+
+function patchingStatusDownloading(nbDownloaded, nbTotal, bytesDownloaded, bytesTotal, bytesPerSec) {
+  patchingActive = true;
+  patchReady = false;
+  setPlayButtonMode('cancel');
+  const pct = bytesTotal > 0
+    ? (100 * bytesDownloaded) / bytesTotal
+    : (nbTotal > 0 ? (100 * nbDownloaded) / nbTotal : 0);
+  animatePct(pct);
+  setPatchLog('warn', `Descargando parche ${nbDownloaded}/${nbTotal}...`);
+  const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
+  const totals = bytesTotal > 0
+    ? `${humanFileSize(bytesDownloaded)} / ${humanFileSize(bytesTotal)}`
+    : `${humanFileSize(bytesDownloaded)} descargados`;
+  progressSpeed.textContent = `${speed} · ${totals}`;
+  setPatchCount(humanFileSize(bytesDownloaded), 'totales');
+  patchVer.textContent = `patch ${nbDownloaded}/${nbTotal}`;
+}
+
+function patchingStatusInstalling(nbInstalled, nbTotal) {
+  patchingActive = true;
+  patchReady = false;
+  setPlayButtonMode('cancel');
+  const pct = nbTotal > 0 ? (100 * nbInstalled) / nbTotal : 0;
+  animatePct(pct);
+  setPatchLog('info', `Instalando parche ${nbInstalled}/${nbTotal}...`);
+  progressSpeed.textContent = 'instalando';
+  const pending = Math.max(nbTotal - nbInstalled, 0);
+  setPatchCount(`${pending}`, 'pendientes');
+}
+
+function patchingStatusDownloadAndInstall(nbDownloaded, nbInstalled, nbTotal, bytesPerSec) {
+  patchingActive = true;
+  patchReady = false;
+  setPlayButtonMode('cancel');
+  const pct = nbTotal > 0 ? (100 * (nbDownloaded + nbInstalled)) / (2 * nbTotal) : 0;
+  animatePct(pct);
+  setPatchLog('warn', `Descargando ${nbDownloaded}/${nbTotal} | Instalando ${nbInstalled}/${nbTotal}`);
+  const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
+  progressSpeed.textContent = `${speed} · descarga+instalación concurrente`;
+  const pending = Math.max(nbTotal - Math.max(nbDownloaded, nbInstalled), 0);
+  setPatchCount(`${pending}`, 'pendientes');
+  patchVer.textContent = `conc. ${nbDownloaded}/${nbInstalled}/${nbTotal}`;
+}
+
+function patchingStatusPatchApplied(fileName) {
+  setPatchLog('ok', `Patch manual aplicado: ${fileName}`);
+  showToast(`Patch manual aplicado: ${fileName}`, '✦');
+}
+
+function notificationInProgress() {
+  setPatchLog('info', 'Ya hay una actualización en progreso.');
+  showToast('Ya hay un update en progreso.', '⚠');
+}
+
+/* Estado inicial auténtico */
+if (hasExternalBridge()) {
+  setPlayButtonMode('start');
+  setPatchLog('info', 'Conectado al cliente patcher. Esperando actualización...');
+  setPatchCount('—', 'pendientes');
+  progressSpeed.textContent = 'esperando';
+} else {
+  setPlayButtonMode('web');
+  setPatchLog('info', 'Modo web: leyendo estado real desde plist.txt');
+  progressSpeed.textContent = 'modo web';
+  loadPatchListSummary();
+}
 </script>
 </body>
 </html>
