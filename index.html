@@ -793,12 +793,10 @@
         <div class="patch-status">
           <div class="patch-status-header">
             <div class="patch-status-label">Registro</div>
-            <div class="patch-version-pill" id="patch-ver">client-2026.04.06</div>
+            <div class="patch-version-pill" id="patch-ver">—</div>
           </div>
           <div class="patch-log" id="patch-log">
-            <div class="patch-log-line ok">Servidor de parches conectado</div>
-            <div class="patch-log-line info">Verificando integridad de archivos...</div>
-            <div class="patch-log-line warn">Descargando 3 parches pendientes</div>
+            <div class="patch-log-line info">Esperando estado real del patcher...</div>
           </div>
           <div class="progress-track">
             <div class="progress-fill" id="progress-fill"></div>
@@ -813,7 +811,7 @@
         <div class="server-stats">
           <div class="stat-card">
             <div class="stat-label">Jugadores Online</div>
-            <div class="stat-value" id="players-online">—<span>cargando</span></div>
+            <div class="stat-value" id="players-online">—<span>sin telemetría</span></div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Uptime</div>
@@ -1051,15 +1049,6 @@ async function loadPatchListSummary() {
   }
 }
 
-/* ── Players simulation ── */
-function updatePlayers() {
-  const n = 128 + Math.floor(Math.random() * 40);
-  document.getElementById('players-online').innerHTML =
-    n + '<span>en línea</span>';
-}
-updatePlayers();
-setInterval(updatePlayers, 8000);
-
 /* ── Login ── */
 document.getElementById('btn-login').addEventListener('click', () => {
   const u = document.getElementById('username').value.trim();
@@ -1190,6 +1179,7 @@ function notificationInProgress() {
 /* Estado inicial auténtico */
 function initPatcherStartup() {
   setPatchCount('—', 'pendientes');
+  document.getElementById('players-online').innerHTML = '—<span>sin telemetría</span>';
   if (hasExternalBridge()) {
     setPlayButtonMode('start');
     setPatchLog('info', 'Conectado al cliente patcher. Preparando actualización...');
