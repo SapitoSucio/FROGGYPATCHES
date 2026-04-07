@@ -252,6 +252,7 @@ const $ = id => document.getElementById(id);
 
 const dom = {
   newsList: $('news-list'),
+  patcherBar: document.querySelector('.patcher-bar'),
   backdrop: $('modal-backdrop'),
   modalEl: $('modal'),
   modalClose: $('modal-close'),
@@ -416,6 +417,10 @@ let _activeCardTransitionName = '';
 let _activeTransitionCardEl = null;
 let _modalSourceCardEl = null;
 
+function setPatcherBarViewTransitionName(name = '') {
+  if (dom.patcherBar) dom.patcherBar.style.viewTransitionName = name;
+}
+
 function makeViewTransitionName() {
   return `news-card-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
 }
@@ -450,6 +455,8 @@ function setModalContent(newsItem) {
 }
 
 function openModal(newsItem, cardEl = null) {
+  setPatcherBarViewTransitionName('');
+
   if (!_supportsViewTransitions || !cardEl) {
     _modalSourceCardEl = null;
     setModalContent(newsItem);
@@ -490,6 +497,7 @@ function closeModal() {
   const sourceCard = _modalSourceCardEl;
 
   if (!_supportsViewTransitions || !sourceCard || !sourceCard.isConnected) {
+    setPatcherBarViewTransitionName('');
     dom.backdrop.classList.remove('open');
     _modalIsOpen = false;
     _modalSourceCardEl = null;
@@ -501,6 +509,7 @@ function closeModal() {
 
   _activeCardTransitionName = makeViewTransitionName();
   _activeTransitionCardEl = sourceCard;
+  setPatcherBarViewTransitionName('patcher-bar');
   dom.modalEl.style.viewTransitionName = _activeCardTransitionName;
 
   const vt = document.startViewTransition(() => {
@@ -517,6 +526,7 @@ function closeModal() {
     .catch(() => {})
     .finally(() => {
       clearActiveViewTransitionNames(sourceCard);
+      setPatcherBarViewTransitionName('');
       document.documentElement.classList.remove('vt-news-closing');
       _modalSourceCardEl = null;
     });

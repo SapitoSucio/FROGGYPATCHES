@@ -1381,6 +1381,11 @@ html.vt-news-closing .modal {
     animation-timing-function: cubic-bezier(.34,1.25,.64,1);
   }
 
+  /* Keep patcher bar above returning cards during modal close transitions. */
+  html.vt-news-closing::view-transition-group(patcher-bar) {
+    z-index: 1000;
+  }
+
   /* Keep snapshot boxes filling the animated group so size interpolation is visible. */
   html.vt-news-opening::view-transition-old(*),
   html.vt-news-opening::view-transition-new(*),
