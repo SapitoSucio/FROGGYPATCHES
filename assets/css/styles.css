@@ -1304,6 +1304,18 @@ html, body {
   opacity: 1;
 }
 
+html.vt-news-opening .modal-backdrop,
+html.vt-news-opening .modal {
+  transition: none !important;
+}
+
+@supports (view-transition-name: none) {
+  ::view-transition-group(*) {
+    animation-duration: .42s;
+    animation-timing-function: cubic-bezier(.34,1.25,.64,1);
+  }
+}
+
 .modal::before {
   content: '';
   position: absolute;

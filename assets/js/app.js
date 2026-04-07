@@ -387,7 +387,7 @@ function renderNews() {
       <div class="news-date">${formatNewsDate(item.createdAt)}</div>
       <div class="news-read-more">${i18n.t('readMore')}</div>`;
 
-    card.addEventListener('click', () => openModal(item));
+    card.addEventListener('click', () => openModal(item, card));
     frag.appendChild(card);
   });
 
@@ -398,6 +398,20 @@ function renderNews() {
    MODAL — FLIP animation from card
    ================================================================ */
 let _modalIsOpen = false;
+const _supportsViewTransitions = typeof document.startViewTransition === 'function';
+let _activeCardTransitionName = '';
+let _activeTransitionCardEl = null;
+
+function makeViewTransitionName() {
+  return `news-card-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+}
+
+function clearActiveViewTransitionNames(cardEl) {
+  if (cardEl) cardEl.style.viewTransitionName = '';
+  dom.modalEl.style.viewTransitionName = '';
+  _activeCardTransitionName = '';
+  _activeTransitionCardEl = null;
+}
 
 function setModalContent(newsItem) {
   const imgs = getModalImages(newsItem);
@@ -421,10 +435,36 @@ function setModalContent(newsItem) {
   dom.modalBody.scrollTop = 0;
 }
 
-function openModal(newsItem) {
-  setModalContent(newsItem);
-  dom.backdrop.classList.add('open');
-  _modalIsOpen = true;
+function openModal(newsItem, cardEl = null) {
+  if (!_supportsViewTransitions || !cardEl) {
+    setModalContent(newsItem);
+    dom.backdrop.classList.add('open');
+    _modalIsOpen = true;
+    return;
+  }
+
+  if (_activeCardTransitionName) clearActiveViewTransitionNames(_activeTransitionCardEl);
+
+  _activeCardTransitionName = makeViewTransitionName();
+  _activeTransitionCardEl = cardEl;
+  cardEl.style.viewTransitionName = _activeCardTransitionName;
+
+  const vt = document.startViewTransition(() => {
+    document.documentElement.classList.add('vt-news-opening');
+    // old state: named card. new state: named modal.
+    cardEl.style.viewTransitionName = '';
+    dom.modalEl.style.viewTransitionName = _activeCardTransitionName;
+    setModalContent(newsItem);
+    dom.backdrop.classList.add('open');
+    _modalIsOpen = true;
+  });
+
+  vt.finished
+    .catch(() => {})
+    .finally(() => {
+      clearActiveViewTransitionNames(_activeTransitionCardEl);
+      document.documentElement.classList.remove('vt-news-opening');
+    });
 }
 
 function closeModal() {
