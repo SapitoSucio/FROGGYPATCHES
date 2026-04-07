@@ -1,38 +1,272 @@
 'use strict';
 
-const TAG_LABELS = {
-  update: 'Actualización',
-  event: 'Evento',
-  maint: 'Mantenimiento'
+/* ================================================================
+   TRANSLATIONS
+   ================================================================ */
+const TRANSLATIONS = {
+  es: {
+    tagUpdate: 'Actualización', tagEvent: 'Evento', tagMaint: 'Mantenimiento', tagNews: 'Noticia',
+    serverGmt: 'Servidor · GMT-6', statusOnline: 'Online',
+    bannerEyebrow: 'Bienvenido al mundo de',
+    bannerSub: 'La aventura te aguarda entre las nieblas de Midgard',
+    latestNews: 'Últimas Noticias',
+    noNewsTitle: 'No hay noticias publicadas',
+    noNewsBody: 'Agrega entradas en assets/js/news-data.js para mostrarlas aquí.',
+    readMore: 'Leer más ›',
+    loginTitle: 'Iniciar Sesión', loginSub: 'Accede a tu cuenta de Vanaheim',
+    labelUser: 'Usuario', placeholderUser: 'Tu nombre de aventurero',
+    labelPass: 'Contraseña', placeholderPass: '••••••••••',
+    rememberSession: 'Recordar sesión', forgotPass: '¿Olvidaste tu contraseña?',
+    btnPlay: '▶ \u00A0Iniciar Sesión y Jugar',
+    btnPlayOnly: '⚑ \u00A0Solo en patcher',
+    btnUpdating: '↻ \u00A0Actualizando cliente...',
+    btnVerifying: '… \u00A0Verificando parches...',
+    btnNotReady: '⚠ \u00A0Cliente no listo',
+    orDivider: 'o', btnRegister: 'Crear nueva cuenta',
+    serverStatus: 'Estado del Servidor', statPlayers: 'Jugadores Online',
+    statUptime: 'Uptime', statExpJob: 'Tasa Exp / Job', statDrop: 'Tasa Drop',
+    patcherLabel: 'Patcher',
+    patcherInit: 'Inicializando patcher...',
+    patcherWaiting: 'Esperando estado real del patcher...',
+    patcherConnecting: 'Conectando con servidor de parches...',
+    patcherWebMode: 'Vista web sin bridge real del patcher.',
+    patcherListLoaded: 'Lista real cargada: {n} parche(s) en plist.txt',
+    patcherReady: 'Cliente actualizado — listo para jugar.',
+    patcherError: 'Error: {msg}',
+    patcherDownloading: 'Descargando parche {a}/{b}...',
+    patcherInstalling: 'Instalando parche {a}/{b}...',
+    patcherConcurrent: 'Descargando {a}/{b} | Instalando {c}/{b}',
+    patcherApplied: 'Patch manual aplicado: {name}',
+    patcherInProgress: 'Ya hay una actualización en progreso.',
+    toastReady: '¡Cliente listo. Que comience la aventura!',
+    toastError: 'Falló la actualización. Revisa el log.',
+    toastUpdating: 'Iniciando actualización...',
+    toastLaunching: 'Lanzando cliente, bienvenido {user}!',
+    toastNeedBridge: 'Esta vista no tiene bridge del patcher.',
+    toastPatching: 'Aún estamos verificando/actualizando parches.',
+    toastNeedCreds: 'Ingresa tu usuario y contraseña.',
+    toastApplied: 'Patch manual aplicado: {name}',
+    toastInProgress: 'Ya hay un update en progreso.',
+    speedVerified: 'lista verificada', speedWebMode: 'modo web',
+    speedInstalling: 'instalando', speedBridgeErr: 'bridge error',
+    speedNoBridge: 'sin bridge', speedStarting: 'iniciando', speedError: 'error',
+    savedAccounts: 'Cuentas guardadas', clearAccounts: 'Limpiar',
+    optionsTitle: 'Opciones', optTheme: 'Tema', optLang: 'Idioma',
+    themeDark: 'Oscuro', themeLight: 'Claro',
+    novatoolsTitle: 'Nova Tools', ntWiki: 'Wiki', ntFluxCP: 'Control Panel',
+    ntDiscord: 'Discord', ntStats: 'Estadísticas'
+  },
+  en: {
+    tagUpdate: 'Update', tagEvent: 'Event', tagMaint: 'Maintenance', tagNews: 'News',
+    serverGmt: 'Server · GMT-6', statusOnline: 'Online',
+    bannerEyebrow: 'Welcome to the world of',
+    bannerSub: 'Adventure awaits you in the mists of Midgard',
+    latestNews: 'Latest News',
+    noNewsTitle: 'No news published yet',
+    noNewsBody: 'Add entries in assets/js/news-data.js to show them here.',
+    readMore: 'Read more ›',
+    loginTitle: 'Sign In', loginSub: 'Access your Vanaheim account',
+    labelUser: 'Username', placeholderUser: 'Your adventurer name',
+    labelPass: 'Password', placeholderPass: '••••••••••',
+    rememberSession: 'Remember session', forgotPass: 'Forgot your password?',
+    btnPlay: '▶ \u00A0Sign In & Play',
+    btnPlayOnly: '⚑ \u00A0Patcher only',
+    btnUpdating: '↻ \u00A0Updating client...',
+    btnVerifying: '… \u00A0Verifying patches...',
+    btnNotReady: '⚠ \u00A0Client not ready',
+    orDivider: 'or', btnRegister: 'Create new account',
+    serverStatus: 'Server Status', statPlayers: 'Players Online',
+    statUptime: 'Uptime', statExpJob: 'Exp / Job Rate', statDrop: 'Drop Rate',
+    patcherLabel: 'Patcher',
+    patcherInit: 'Initializing patcher...',
+    patcherWaiting: 'Waiting for patcher status...',
+    patcherConnecting: 'Connecting to patch server...',
+    patcherWebMode: 'Web view — no real patcher bridge.',
+    patcherListLoaded: 'List loaded: {n} patch(es) in plist.txt',
+    patcherReady: 'Client updated — ready to play.',
+    patcherError: 'Error: {msg}',
+    patcherDownloading: 'Downloading patch {a}/{b}...',
+    patcherInstalling: 'Installing patch {a}/{b}...',
+    patcherConcurrent: 'Downloading {a}/{b} | Installing {c}/{b}',
+    patcherApplied: 'Manual patch applied: {name}',
+    patcherInProgress: 'An update is already in progress.',
+    toastReady: 'Client ready. Let the adventure begin!',
+    toastError: 'Update failed. Check the log.',
+    toastUpdating: 'Starting update...',
+    toastLaunching: 'Launching client, welcome {user}!',
+    toastNeedBridge: 'This view has no patcher bridge.',
+    toastPatching: 'Still verifying/updating patches.',
+    toastNeedCreds: 'Enter your username and password.',
+    toastApplied: 'Manual patch applied: {name}',
+    toastInProgress: 'An update is already in progress.',
+    speedVerified: 'list verified', speedWebMode: 'web mode',
+    speedInstalling: 'installing', speedBridgeErr: 'bridge error',
+    speedNoBridge: 'no bridge', speedStarting: 'starting', speedError: 'error',
+    savedAccounts: 'Saved accounts', clearAccounts: 'Clear',
+    optionsTitle: 'Options', optTheme: 'Theme', optLang: 'Language',
+    themeDark: 'Dark', themeLight: 'Light',
+    novatoolsTitle: 'Nova Tools', ntWiki: 'Wiki', ntFluxCP: 'Control Panel',
+    ntDiscord: 'Discord', ntStats: 'Statistics'
+  }
 };
 
-const $ = (id) => document.getElementById(id);
+/* ================================================================
+   I18N
+   ================================================================ */
+const i18n = {
+  lang: 'es',
+
+  detect() {
+    const saved = localStorage.getItem('vanaheim_lang');
+    if (saved === 'es' || saved === 'en') return saved;
+    const sys = (navigator.language || 'es').toLowerCase();
+    return sys.startsWith('en') ? 'en' : 'es';
+  },
+
+  t(key, vars = {}) {
+    const str = (TRANSLATIONS[this.lang] || TRANSLATIONS.es)[key]
+      || TRANSLATIONS.es[key]
+      || key;
+    return str.replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? vars[k] : ''));
+  },
+
+  apply() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = this.t(el.dataset.i18n);
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      el.placeholder = this.t(el.dataset.i18nPlaceholder);
+    });
+    // Update active lang pill
+    document.querySelectorAll('.lang-pill').forEach(pill => {
+      pill.classList.toggle('active', pill.dataset.lang === this.lang);
+    });
+    // Re-render dynamic content
+    renderNews();
+    syncLaunchButtonState();
+  },
+
+  setLang(lang) {
+    if (lang !== 'es' && lang !== 'en') return;
+    this.lang = lang;
+    localStorage.setItem('vanaheim_lang', lang);
+    this.apply();
+  },
+
+  init() {
+    this.lang = this.detect();
+    this.apply();
+  }
+};
+
+/* ================================================================
+   THEME
+   ================================================================ */
+const themeManager = {
+  KEY: 'vanaheim_theme',
+
+  detect() {
+    const saved = localStorage.getItem(this.KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+    return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  },
+
+  apply(mode) {
+    document.documentElement.setAttribute('data-theme', mode);
+    const input = document.getElementById('theme-toggle-input');
+    if (input) input.checked = mode === 'light';
+    const thumb = document.getElementById('theme-toggle-thumb');
+    if (thumb) thumb.textContent = mode === 'light' ? '☀' : '☽';
+  },
+
+  toggle() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(this.KEY, next);
+    this.apply(next);
+  },
+
+  init() {
+    this.apply(this.detect());
+    window.matchMedia?.('(prefers-color-scheme: light)').addEventListener('change', e => {
+      if (!localStorage.getItem(this.KEY)) {
+        this.apply(e.matches ? 'light' : 'dark');
+      }
+    });
+  }
+};
+
+/* ================================================================
+   ACCOUNTS
+   ================================================================ */
+const accounts = {
+  KEY: 'vanaheim_accounts',
+  MAX: 6,
+
+  load() {
+    try { return JSON.parse(localStorage.getItem(this.KEY)) || []; }
+    catch { return []; }
+  },
+
+  save(list) {
+    localStorage.setItem(this.KEY, JSON.stringify(list));
+  },
+
+  add(login) {
+    if (!login || !login.trim()) return;
+    let list = this.load().filter(a => a.login !== login);
+    list.unshift({ login, savedAt: Date.now() });
+    if (list.length > this.MAX) list = list.slice(0, this.MAX);
+    this.save(list);
+    renderAccountSwitcher();
+  },
+
+  remove(login) {
+    this.save(this.load().filter(a => a.login !== login));
+    renderAccountSwitcher();
+  },
+
+  clear() {
+    this.save([]);
+    renderAccountSwitcher();
+  }
+};
+
+/* ================================================================
+   DOM refs
+   ================================================================ */
+const $ = id => document.getElementById(id);
 
 const dom = {
   newsList: $('news-list'),
   backdrop: $('modal-backdrop'),
+  modalEl: $('modal'),
   modalClose: $('modal-close'),
   modalTag: $('modal-tag'),
   modalTitle: $('modal-title'),
   modalDate: $('modal-date'),
   modalBody: $('modal-body'),
-
   clockTime: $('clock-time'),
-
   username: $('username'),
   password: $('password'),
   btnLaunch: $('btn-launch'),
-
   toast: $('toast'),
   toastIcon: $('toast-icon'),
   toastMsg: $('toast-msg'),
-
   patchLog: $('patch-log'),
   progressFill: $('progress-fill'),
   progressPct: $('progress-pct'),
   progressSpeed: $('progress-speed'),
   playersOnline: $('players-online'),
-  patchVersion: document.querySelector('.patch-version-pill')
+  patchVersion: document.querySelector('.patch-version-pill'),
+  accountSwitcher: $('account-switcher'),
+  accountList: $('account-list'),
+  accountClear: $('account-clear'),
+  panelOptions: $('panel-options'),
+  panelNovatools: $('panel-novatools'),
+  btnOptions: $('btn-options'),
+  btnNovatools: $('btn-novatools'),
+  themeToggleInput: $('theme-toggle-input')
 };
 
 const state = {
@@ -43,58 +277,57 @@ const state = {
   backendSignalReceived: false
 };
 
-function getNewsData() {
-  const rawNews = Array.isArray(window.NEWS_DATA) ? window.NEWS_DATA : [];
+/* ================================================================
+   NEWS
+   ================================================================ */
+function getLocalizedField(item, field) {
+  if (i18n.lang !== 'es') {
+    const key = `${field}_${i18n.lang}`;
+    if (item[key]) return item[key];
+  }
+  return item[field] || '';
+}
 
-  return rawNews
-    .filter((item) => item && item.published !== false)
+function getNewsData() {
+  const raw = Array.isArray(window.NEWS_DATA) ? window.NEWS_DATA : [];
+  return raw
+    .filter(item => item && item.published !== false)
     .slice()
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
 function formatNewsDate(dateString) {
   const date = new Date(dateString);
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Fecha inválida';
-  }
-
-  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  if (Number.isNaN(date.getTime())) return '—';
+  const months = {
+    es: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+    en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  };
   const day = String(date.getDate()).padStart(2, '0');
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
-
-  return `${day} · ${month} · ${year}`;
+  const month = (months[i18n.lang] || months.es)[date.getMonth()];
+  return `${day} · ${month} · ${date.getFullYear()}`;
 }
 
 function getTagLabel(tag) {
-  return TAG_LABELS[tag] || 'Noticia';
+  const map = { update: 'tagUpdate', event: 'tagEvent', maint: 'tagMaint' };
+  return i18n.t(map[tag] || 'tagNews');
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+function escapeHtml(v) {
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-function normalizeImageUrl(value) {
-  if (typeof value !== 'string') return '';
-  return value.trim();
+function normalizeImageUrl(v) { return typeof v === 'string' ? v.trim() : ''; }
+
+function clampPercent(v, fallback) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.min(200, Math.max(-200, Math.round(n))) : fallback;
 }
 
-function clampPercent(value, fallback) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(200, Math.max(-200, Math.round(parsed)));
-}
-
-function clampRange(value, min, max, fallback) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(max, Math.max(min, Math.round(parsed)));
+function clampRange(v, min, max, fallback) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.round(n))) : fallback;
 }
 
 function getCardImage(item) {
@@ -111,21 +344,15 @@ function getCardImage(item) {
 
 function getModalImages(item) {
   const list = [];
-
-  const modalSingle = normalizeImageUrl(item.modalImage || item.image);
-
+  const single = normalizeImageUrl(item.modalImage || item.image);
   if (Array.isArray(item.images) && item.images.length) {
-    item.images.forEach((img) => {
-      const normalized = normalizeImageUrl(img);
-      if (normalized) list.push(normalized);
-    });
-  } else if (modalSingle) {
-    list.push(modalSingle);
+    item.images.forEach(img => { const n = normalizeImageUrl(img); if (n) list.push(n); });
+  } else if (single) {
+    list.push(single);
   } else {
-    const cardOnly = normalizeImageUrl(item.cardImage);
-    if (cardOnly) list.push(cardOnly);
+    const card = normalizeImageUrl(item.cardImage);
+    if (card) list.push(card);
   }
-
   return list;
 }
 
@@ -136,66 +363,234 @@ function renderNews() {
   if (!news.length) {
     dom.newsList.innerHTML = `
       <div class="news-card">
-        <div class="news-tag update">Noticias</div>
-        <h3>No hay noticias publicadas</h3>
-        <p>Agrega entradas en <code>assets/js/news-data.js</code> para mostrarlas aquí.</p>
+        <div class="news-tag update">${i18n.t('tagNews')}</div>
+        <h3>${i18n.t('noNewsTitle')}</h3>
+        <p>${i18n.t('noNewsBody')}</p>
         <div class="news-date">—</div>
-      </div>
-    `;
+      </div>`;
     return;
   }
 
   const frag = document.createDocumentFragment();
-
   news.forEach((item, index) => {
     const card = document.createElement('div');
     card.className = 'news-card';
     card.style.animationDelay = `${index * 0.055}s`;
-    const cardImage = getCardImage(item);
-
-    if (cardImage) {
-      card.classList.add('has-media');
-    }
+    const ci = getCardImage(item);
+    if (ci) card.classList.add('has-media');
 
     card.innerHTML = `
-      ${cardImage ? `<div class="news-card-media" style="--news-card-image: url('${cardImage.url.replace(/'/g, '%27')}'); --news-card-pos-x: ${cardImage.posX}%; --news-card-pos-y: ${cardImage.posY}%; --news-card-zoom: ${cardImage.zoom}%; --news-card-mask-size: ${cardImage.maskSize}%;"></div>` : ''}
+      ${ci ? `<div class="news-card-media" style="--news-card-image:url('${ci.url.replace(/'/g,'%27')}');--news-card-pos-x:${ci.posX}%;--news-card-pos-y:${ci.posY}%;--news-card-zoom:${ci.zoom}%;--news-card-mask-size:${ci.maskSize}%;"></div>` : ''}
       <div class="news-tag ${item.tag}">${getTagLabel(item.tag)}</div>
-      <h3>${item.title}</h3>
-      <p>${item.excerpt}</p>
+      <h3>${escapeHtml(getLocalizedField(item, 'title'))}</h3>
+      <p>${escapeHtml(getLocalizedField(item, 'excerpt'))}</p>
       <div class="news-date">${formatNewsDate(item.createdAt)}</div>
-      <div class="news-read-more">Leer más ›</div>
-    `;
+      <div class="news-read-more">${i18n.t('readMore')}</div>`;
 
-    card.addEventListener('click', () => openModal(item));
+    card.addEventListener('click', () => openModal(item, card));
     frag.appendChild(card);
   });
 
   dom.newsList.appendChild(frag);
 }
 
-function openModal(newsItem) {
-  const modalImages = getModalImages(newsItem);
-  const modalPosX = clampPercent(newsItem.modalImagePosX, 50);
-  const modalPosY = clampPercent(newsItem.modalImagePosY, 50);
-  const modalZoom = clampRange(newsItem.modalImageZoom, 50, 400, 100);
-  const imagesMarkup = modalImages.map((imageUrl, index) => `
+/* ================================================================
+   MODAL — FLIP animation from card
+   ================================================================ */
+let _modalOpenAnim = null;
+let _backdropOpenAnim = null;
+let _modalIsOpen = false;
+
+function setModalContent(newsItem) {
+  const imgs = getModalImages(newsItem);
+  const px = clampPercent(newsItem.modalImagePosX, 50);
+  const py = clampPercent(newsItem.modalImagePosY, 50);
+  const pz = clampRange(newsItem.modalImageZoom, 50, 400, 100);
+
+  const imagesMarkup = imgs.map((url, i) => `
     <figure class="modal-news-figure">
-      <div class="modal-news-image" role="img" aria-label="Imagen ${index + 1} de ${escapeHtml(newsItem.title || 'noticia')}" style="--modal-news-image: url('${imageUrl.replace(/'/g, '%27')}'); --modal-news-pos-x: ${modalPosX}%; --modal-news-pos-y: ${modalPosY}%; --modal-news-zoom: ${modalZoom}%;"></div>
-    </figure>
-  `).join('');
+      <div class="modal-news-image"
+        role="img"
+        aria-label="${escapeHtml(getLocalizedField(newsItem, 'title') || 'image')} ${i+1}"
+        style="--modal-news-image:url('${url.replace(/'/g,'%27')}');--modal-news-pos-x:${px}%;--modal-news-pos-y:${py}%;--modal-news-zoom:${pz}%;">
+      </div>
+    </figure>`).join('');
 
   dom.modalTag.innerHTML = `<span class="news-tag ${newsItem.tag}">${getTagLabel(newsItem.tag)}</span>`;
-  dom.modalTitle.textContent = newsItem.title;
+  dom.modalTitle.textContent = getLocalizedField(newsItem, 'title');
   dom.modalDate.textContent = formatNewsDate(newsItem.createdAt);
-  dom.modalBody.innerHTML = `${imagesMarkup}${newsItem.body || ''}`;
+  dom.modalBody.innerHTML = `${imagesMarkup}${getLocalizedField(newsItem, 'body') || ''}`;
   dom.modalBody.scrollTop = 0;
+}
+
+function openModal(newsItem, cardEl) {
+  // Cancel any running animation
+  if (_modalOpenAnim) { try { _modalOpenAnim.cancel(); } catch (_) {} _modalOpenAnim = null; }
+  if (_backdropOpenAnim) { try { _backdropOpenAnim.cancel(); } catch (_) {} _backdropOpenAnim = null; }
+
+  setModalContent(newsItem);
+
+  // Reveal backdrop (pointer-events) — opacity starts at 0, JS will animate it
+  dom.backdrop.style.opacity = '0';
   dom.backdrop.classList.add('open');
+
+  // Force opacity=0 on modal before measuring
+  dom.modalEl.style.opacity = '0';
+  dom.modalEl.style.transform = 'none';
+
+  // Measure on the next frame (after layout)
+  requestAnimationFrame(() => {
+    const fromRect = cardEl.getBoundingClientRect();
+    const toRect = dom.modalEl.getBoundingClientRect();
+
+    // Avoid division by zero on degenerate rects
+    const scaleX = toRect.width  > 0 ? fromRect.width  / toRect.width  : 1;
+    const scaleY = toRect.height > 0 ? fromRect.height / toRect.height : 1;
+    const dx = (fromRect.left + fromRect.width  / 2) - (toRect.left + toRect.width  / 2);
+    const dy = (fromRect.top  + fromRect.height / 2) - (toRect.top  + toRect.height / 2);
+
+    const cardRadius = getComputedStyle(cardEl).borderRadius || '14px';
+
+    // Animate backdrop
+    _backdropOpenAnim = dom.backdrop.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: 300, easing: 'ease', fill: 'forwards' }
+    );
+    _backdropOpenAnim.onfinish = () => {
+      dom.backdrop.style.opacity = '1';
+      _backdropOpenAnim = null;
+    };
+
+    // FLIP modal from card position to natural center position
+    dom.modalEl.style.opacity = '';
+    dom.modalEl.style.transform = '';
+
+    _modalOpenAnim = dom.modalEl.animate([
+      {
+        transform: `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`,
+        opacity: 0,
+        borderRadius: cardRadius
+      },
+      {
+        transform: 'translate(0, 0) scale(1)',
+        opacity: 1,
+        borderRadius: '20px'
+      }
+    ], {
+      duration: 480,
+      easing: 'cubic-bezier(0.34, 1.25, 0.64, 1)',
+      fill: 'forwards'
+    });
+
+    _modalOpenAnim.onfinish = () => {
+      _modalOpenAnim = null;
+    };
+
+    _modalIsOpen = true;
+  });
 }
 
 function closeModal() {
-  dom.backdrop.classList.remove('open');
+  if (!_modalIsOpen) return;
+
+  // Cancel any running open animation
+  if (_modalOpenAnim) { try { _modalOpenAnim.cancel(); } catch (_) {} _modalOpenAnim = null; }
+  if (_backdropOpenAnim) { try { _backdropOpenAnim.cancel(); } catch (_) {} _backdropOpenAnim = null; }
+
+  _modalIsOpen = false;
+
+  const closeBackdropAnim = dom.backdrop.animate(
+    [{ opacity: 1 }, { opacity: 0 }],
+    { duration: 240, easing: 'ease-in', fill: 'forwards' }
+  );
+
+  const closeModalAnim = dom.modalEl.animate([
+    { transform: 'scale(1)', opacity: 1, borderRadius: '20px' },
+    { transform: 'scale(0.92) translateY(16px)', opacity: 0, borderRadius: '14px' }
+  ], { duration: 210, easing: 'ease-in', fill: 'forwards' });
+
+  closeBackdropAnim.onfinish = () => {
+    dom.backdrop.classList.remove('open');
+    dom.backdrop.style.opacity = '';
+    // Clean up Web Animations fill:forwards state
+    try { closeModalAnim.cancel(); } catch (_) {}
+    try { closeBackdropAnim.cancel(); } catch (_) {}
+  };
 }
 
+/* ================================================================
+   FLOAT PANELS (Gear + Star)
+   ================================================================ */
+function openPanel(which) {
+  const panel = which === 'options' ? dom.panelOptions : dom.panelNovatools;
+  const btn   = which === 'options' ? dom.btnOptions   : dom.btnNovatools;
+  const other = which === 'options' ? dom.panelNovatools : dom.panelOptions;
+  const otherBtn = which === 'options' ? dom.btnNovatools : dom.btnOptions;
+
+  // Close the other panel first
+  other.classList.remove('open');
+  otherBtn.classList.remove('panel-active');
+
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  btn.classList.toggle('panel-active', !isOpen);
+}
+
+function closePanels() {
+  dom.panelOptions.classList.remove('open');
+  dom.panelNovatools.classList.remove('open');
+  dom.btnOptions.classList.remove('panel-active');
+  dom.btnNovatools.classList.remove('panel-active');
+}
+
+/* ================================================================
+   ACCOUNT SWITCHER
+   ================================================================ */
+function renderAccountSwitcher() {
+  const list = accounts.load();
+  if (!list.length) {
+    dom.accountSwitcher.classList.remove('visible');
+    return;
+  }
+
+  dom.accountSwitcher.classList.add('visible');
+
+  // Update header label
+  const titleEl = dom.accountSwitcher.querySelector('.account-switcher-title');
+  if (titleEl) titleEl.textContent = i18n.t('savedAccounts');
+  const clearEl = dom.accountSwitcher.querySelector('.account-switcher-clear');
+  if (clearEl) clearEl.textContent = i18n.t('clearAccounts');
+
+  dom.accountList.innerHTML = '';
+  const frag = document.createDocumentFragment();
+
+  list.forEach(acc => {
+    const row = document.createElement('div');
+    row.className = 'account-item';
+    row.innerHTML = `
+      <div class="account-avatar">${escapeHtml(acc.login.charAt(0))}</div>
+      <div class="account-name">${escapeHtml(acc.login)}</div>
+      <button class="account-remove" aria-label="Remove">×</button>`;
+
+    row.querySelector('.account-remove').addEventListener('click', e => {
+      e.stopPropagation();
+      accounts.remove(acc.login);
+    });
+
+    row.addEventListener('click', () => {
+      dom.username.value = acc.login;
+      dom.password.focus();
+    });
+
+    frag.appendChild(row);
+  });
+
+  dom.accountList.appendChild(frag);
+}
+
+/* ================================================================
+   CLOCK
+   ================================================================ */
 function updateClock() {
   const gmt6 = new Date(Date.now() - 6 * 3600000);
   const hh = String(gmt6.getUTCHours()).padStart(2, '0');
@@ -204,138 +599,117 @@ function updateClock() {
   dom.clockTime.textContent = `${hh}:${mm}:${ss}`;
 }
 
+/* ================================================================
+   PARTICLES
+   ================================================================ */
 const canvas = $('particles');
 const ctx = canvas.getContext('2d');
-let W = 0;
-let H = 0;
-let particles = [];
+let W = 0, H = 0, particles = [];
 
-function resizeCanvas() {
-  W = canvas.width = innerWidth;
-  H = canvas.height = innerHeight;
-}
+function resizeCanvas() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
 
 function createParticle() {
   return {
-    x: Math.random() * W,
-    y: Math.random() * H,
-    vx: (Math.random() - 0.5) * 0.28,
-    vy: -Math.random() * 0.35 - 0.08,
+    x: Math.random() * W, y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.28, vy: -Math.random() * 0.35 - 0.08,
     r: Math.random() * 1.3 + 0.3,
-    life: 0,
-    max: 200 + Math.random() * 260,
+    life: 0, max: 200 + Math.random() * 260,
     c: Math.random() < 0.6 ? '200,168,75' : '80,120,200'
   };
 }
 
 function initParticles() {
   particles = [];
-
-  for (let i = 0; i < 70; i += 1) {
-    const particle = createParticle();
-    particle.life = Math.random() * particle.max;
-    particles.push(particle);
+  for (let i = 0; i < 70; i++) {
+    const p = createParticle();
+    p.life = Math.random() * p.max;
+    particles.push(p);
   }
 }
 
 function animateParticles() {
   ctx.clearRect(0, 0, W, H);
-
-  particles.forEach((particle, index) => {
-    particle.life += 1;
-
-    if (particle.life > particle.max) {
-      particles[index] = createParticle();
-      return;
-    }
-
-    const alpha = Math.sin((particle.life / particle.max) * Math.PI) * 0.45;
-
+  particles.forEach((p, i) => {
+    p.life += 1;
+    if (p.life > p.max) { particles[i] = createParticle(); return; }
+    const alpha = Math.sin((p.life / p.max) * Math.PI) * 0.45;
     ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${particle.c},${alpha})`;
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${p.c},${alpha})`;
     ctx.fill();
-
-    particle.x += particle.vx;
-    particle.y += particle.vy;
+    p.x += p.vx;
+    p.y += p.vy;
   });
-
   requestAnimationFrame(animateParticles);
 }
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+let _toastTimer = null;
 
 function showToast(msg, icon = '⚑') {
   dom.toastMsg.textContent = msg;
   dom.toastIcon.textContent = icon;
   dom.toast.classList.add('show');
-  setTimeout(() => dom.toast.classList.remove('show'), 3600);
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => dom.toast.classList.remove('show'), 3600);
 }
 
+/* ================================================================
+   BRIDGE
+   ================================================================ */
 function openExternalUrl(url) {
   if (!url) return;
-
-  if (bridge.has()) {
-    bridge.json('open_url', { url });
-    return;
-  }
-
+  if (bridge.has()) { bridge.json('open_url', { url }); return; }
   window.open(url, '_blank', 'noopener');
 }
 
 const bridge = {
-  has() {
-    return typeof window.external?.invoke === 'function';
-  },
+  has() { return typeof window.external?.invoke === 'function'; },
 
   invoke(payload) {
     if (!this.has()) return false;
-
-    const request = typeof payload === 'string'
-      ? payload
-      : JSON.stringify(payload);
-
+    const req = typeof payload === 'string' ? payload : JSON.stringify(payload);
     try {
-      const result = window.external.invoke(request);
-
-      if (result && typeof result.then === 'function') {
-        result.catch((err) => {
+      const r = window.external.invoke(req);
+      if (r && typeof r.then === 'function') {
+        r.catch(err => {
           state.patching = false;
           state.updateRequested = false;
           setPatchLog('warn', `Bridge error: ${String(err)}`);
-          dom.progressSpeed.textContent = 'bridge error';
+          dom.progressSpeed.textContent = i18n.t('speedBridgeErr');
           dom.progressFill.classList.remove('active');
           syncLaunchButtonState();
         });
       }
-
       return true;
     } catch (err) {
       state.patching = false;
       state.updateRequested = false;
       setPatchLog('warn', `Bridge error: ${String(err)}`);
-      dom.progressSpeed.textContent = 'bridge error';
+      dom.progressSpeed.textContent = i18n.t('speedBridgeErr');
       dom.progressFill.classList.remove('active');
       syncLaunchButtonState();
       return false;
     }
   },
 
-  cmd(command) {
-    return this.invoke(command);
-  },
-
-  json(fn, parameters) {
-    return this.invoke({ function: fn, parameters });
-  }
+  cmd(command) { return this.invoke(command); },
+  json(fn, parameters) { return this.invoke({ function: fn, parameters }); }
 };
 
+/* ================================================================
+   PATCHER STATE
+   ================================================================ */
 function setPatchLog(type, msg) {
   dom.patchLog.className = `patcher-log-line ${type}`;
   dom.patchLog.textContent = msg;
 }
 
 function setProgress(target, monotonic = false) {
-  const boundedTarget = Math.max(0, Math.min(100, Number(target) || 0));
-  const next = monotonic ? Math.max(state.pct, boundedTarget) : boundedTarget;
+  const bounded = Math.max(0, Math.min(100, Number(target) || 0));
+  const next = monotonic ? Math.max(state.pct, bounded) : bounded;
   state.pct = Math.round(next);
   dom.progressFill.style.width = `${state.pct}%`;
   dom.progressPct.textContent = `${state.pct}%`;
@@ -344,116 +718,48 @@ function setProgress(target, monotonic = false) {
 function syncLaunchButtonState() {
   if (!bridge.has()) {
     dom.btnLaunch.disabled = true;
-    dom.btnLaunch.innerHTML = '⚑ &nbsp;Solo en patcher';
+    dom.btnLaunch.innerHTML = i18n.t('btnPlayOnly');
     return;
   }
-
   if (state.patchReady) {
     dom.btnLaunch.disabled = false;
-    dom.btnLaunch.innerHTML = '▶ &nbsp;Iniciar Sesión y Jugar';
+    dom.btnLaunch.innerHTML = i18n.t('btnPlay');
     return;
   }
-
   dom.btnLaunch.disabled = true;
   if (state.patching || state.updateRequested) {
-    dom.btnLaunch.innerHTML = '↻ &nbsp;Actualizando cliente...';
+    dom.btnLaunch.innerHTML = i18n.t('btnUpdating');
     return;
   }
-
   if (!state.backendSignalReceived) {
-    dom.btnLaunch.innerHTML = '… &nbsp;Verificando parches...';
+    dom.btnLaunch.innerHTML = i18n.t('btnVerifying');
     return;
   }
-
-  dom.btnLaunch.innerHTML = '⚠ &nbsp;Cliente no listo';
+  dom.btnLaunch.innerHTML = i18n.t('btnNotReady');
 }
 
 function humanFileSize(size) {
   if (!size || size <= 0) return '0 B';
-
   const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB'];
   const i = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
-  const n = size / Math.pow(1024, i);
-
-  return `${n.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+  return `${(size / Math.pow(1024, i)).toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
 }
 
-function requestStartUpdate(showFeedback = false) {
-  if (!bridge.has() || state.patchReady || state.patching || state.updateRequested) return;
-
-  state.updateRequested = true;
-  state.patching = true;
-  state.patchReady = false;
-  syncLaunchButtonState();
-
-  dom.progressFill.classList.add('active');
-  setPatchLog('info', 'Conectando con servidor de parches...');
-  dom.progressSpeed.textContent = 'iniciando';
-
-  const sent = bridge.cmd('start_update');
-
-  if (!sent) {
-    state.updateRequested = false;
-    state.patching = false;
-    setPatchLog('warn', 'Bridge no disponible.');
-    dom.progressSpeed.textContent = 'sin bridge';
-    syncLaunchButtonState();
-    return;
-  }
-
-  if (showFeedback) {
-    showToast('Iniciando actualización...', '↻');
-  }
-}
-
-function parsePatchList(raw) {
-  return raw
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith('//'));
-}
-
-async function loadPatchListSummary() {
-  try {
-    const response = await fetch('./plist.txt', { cache: 'no-store' });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const raw = await response.text();
-    const lines = parsePatchList(raw);
-
-    if (dom.patchVersion) {
-      dom.patchVersion.textContent = `plist ${lines.length}`;
-    }
-
-    setPatchLog('info', `Lista real cargada: ${lines.length} parche(s) en plist.txt`);
-    dom.progressSpeed.textContent = 'lista verificada';
-  } catch {
-    setPatchLog('warn', 'Vista web sin bridge real del patcher.');
-    dom.progressSpeed.textContent = 'modo web';
-    dom.progressFill.classList.remove('active');
-  }
-}
-
+/* ================================================================
+   PUBLIC PATCHER CALLBACKS
+   ================================================================ */
 function patchingStatusReady() {
   state.backendSignalReceived = true;
   state.patchReady = true;
   state.patching = false;
   state.updateRequested = false;
-
   setProgress(100);
-  setPatchLog('ok', 'Cliente actualizado — listo para jugar.');
+  setPatchLog('ok', i18n.t('patcherReady'));
   dom.progressSpeed.textContent = '—';
   dom.progressFill.classList.remove('active');
-
-  if (dom.patchVersion) {
-    dom.patchVersion.textContent = 'ready';
-  }
-
+  if (dom.patchVersion) dom.patchVersion.textContent = 'ready';
   syncLaunchButtonState();
-  showToast('Cliente listo. ¡Que comience la aventura!', '✦');
+  showToast(i18n.t('toastReady'), '✦');
 }
 
 function patchingStatusError(errorMsg) {
@@ -461,36 +767,28 @@ function patchingStatusError(errorMsg) {
   state.patchReady = false;
   state.patching = false;
   state.updateRequested = false;
-
-  setPatchLog('warn', `Error: ${errorMsg}`);
-  dom.progressSpeed.textContent = 'error';
+  setPatchLog('warn', i18n.t('patcherError', { msg: errorMsg }));
+  dom.progressSpeed.textContent = i18n.t('speedError');
   dom.progressFill.classList.remove('active');
   syncLaunchButtonState();
-  showToast('Falló la actualización. Revisa el log.', '⚠');
+  showToast(i18n.t('toastError'), '⚠');
 }
 
 function patchingStatusDownloading(nbDownloaded, nbTotal, bytesDownloaded, bytesTotal, bytesPerSec) {
   state.backendSignalReceived = true;
   state.patchReady = false;
   state.patching = true;
-
   const pct = bytesTotal > 0
     ? (100 * bytesDownloaded) / bytesTotal
     : (nbTotal > 0 ? (100 * nbDownloaded) / nbTotal : 0);
-
   setProgress(pct, true);
-  setPatchLog('warn', `Descargando parche ${nbDownloaded}/${nbTotal}...`);
-
+  setPatchLog('warn', i18n.t('patcherDownloading', { a: nbDownloaded, b: nbTotal }));
   const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
   const totals = bytesTotal > 0
     ? `${humanFileSize(bytesDownloaded)} / ${humanFileSize(bytesTotal)}`
-    : `${humanFileSize(bytesDownloaded)} descargados`;
-
+    : `${humanFileSize(bytesDownloaded)}`;
   dom.progressSpeed.textContent = `${speed} · ${totals}`;
-
-  if (dom.patchVersion) {
-    dom.patchVersion.textContent = `patch ${nbDownloaded}/${nbTotal}`;
-  }
+  if (dom.patchVersion) dom.patchVersion.textContent = `patch ${nbDownloaded}/${nbTotal}`;
   syncLaunchButtonState();
 }
 
@@ -498,11 +796,10 @@ function patchingStatusInstalling(nbInstalled, nbTotal) {
   state.backendSignalReceived = true;
   state.patchReady = false;
   state.patching = true;
-
   const pct = nbTotal > 0 ? (100 * nbInstalled) / nbTotal : 0;
   setProgress(pct, true);
-  setPatchLog('info', `Instalando parche ${nbInstalled}/${nbTotal}...`);
-  dom.progressSpeed.textContent = 'instalando';
+  setPatchLog('info', i18n.t('patcherInstalling', { a: nbInstalled, b: nbTotal }));
+  dom.progressSpeed.textContent = i18n.t('speedInstalling');
   syncLaunchButtonState();
 }
 
@@ -510,224 +807,221 @@ function patchingStatusDownloadAndInstall(nbDownloaded, nbInstalled, nbTotal, by
   state.backendSignalReceived = true;
   state.patchReady = false;
   state.patching = true;
-
-  const pct = nbTotal > 0
-    ? (100 * (nbDownloaded + nbInstalled)) / (2 * nbTotal)
-    : 0;
-
+  const pct = nbTotal > 0 ? (100 * (nbDownloaded + nbInstalled)) / (2 * nbTotal) : 0;
   setProgress(pct, true);
-  setPatchLog('warn', `Descargando ${nbDownloaded}/${nbTotal} | Instalando ${nbInstalled}/${nbTotal}`);
-
+  setPatchLog('warn', i18n.t('patcherConcurrent', { a: nbDownloaded, b: nbTotal, c: nbInstalled }));
   const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
-  dom.progressSpeed.textContent = `${speed} · descarga+instalación concurrente`;
-
-  if (dom.patchVersion) {
-    dom.patchVersion.textContent = `conc. ${nbDownloaded}/${nbInstalled}/${nbTotal}`;
-  }
+  dom.progressSpeed.textContent = `${speed} · dl+install`;
+  if (dom.patchVersion) dom.patchVersion.textContent = `conc. ${nbDownloaded}/${nbInstalled}/${nbTotal}`;
   syncLaunchButtonState();
 }
 
 function patchingStatusPatchApplied(fileName) {
-  setPatchLog('ok', `Patch manual aplicado: ${fileName}`);
-  showToast(`Patch manual aplicado: ${fileName}`, '✦');
+  setPatchLog('ok', i18n.t('patcherApplied', { name: fileName }));
+  showToast(i18n.t('toastApplied', { name: fileName }), '✦');
 }
 
 function notificationInProgress() {
-  setPatchLog('info', 'Ya hay una actualización en progreso.');
-  showToast('Ya hay un update en progreso.', '⚠');
+  setPatchLog('info', i18n.t('patcherInProgress'));
+  showToast(i18n.t('toastInProgress'), '⚠');
 }
 
-function bindExternalLinks() {
-  const DRAG_CLICK_THRESHOLD_PX = 3;
-  const links = document.querySelectorAll(
-    '.topbar-nav a[href], .forgot-link[href], .btn-register[href]'
-  );
-
-  links.forEach((link) => {
-    const externalUrl = link.getAttribute('href');
-    if (!externalUrl || externalUrl === '#') {
-      return;
-    }
-    // Disable native anchor navigation entirely; we open URLs via bridge only.
-    link.setAttribute('href', '#');
-
-    let pointerDownX = 0;
-    let pointerDownY = 0;
-    let pointerIsDown = false;
-    let dragged = false;
-
-    const open = () => {
-      openExternalUrl(externalUrl);
-    };
-
-    link.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0) return;
-      pointerIsDown = true;
-      dragged = false;
-      pointerDownX = event.clientX;
-      pointerDownY = event.clientY;
-    });
-
-    link.addEventListener('pointermove', (event) => {
-      if (!pointerIsDown || dragged) return;
-      const dx = event.clientX - pointerDownX;
-      const dy = event.clientY - pointerDownY;
-      if ((dx * dx + dy * dy) >= (DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX)) {
-        dragged = true;
-      }
-    });
-
-    link.addEventListener('pointerup', () => {
-      if (!pointerIsDown) return;
-      pointerIsDown = false;
-      if (dragged) {
-        dragged = false;
-        return;
-      }
-      open();
-    });
-
-    link.addEventListener('pointerleave', () => {
-      if (pointerIsDown) {
-        dragged = true;
-      }
-    });
-
-    link.addEventListener('lostpointercapture', () => {
-      if (pointerIsDown) {
-        dragged = true;
-      }
-    });
-
-    link.addEventListener('dragstart', (event) => {
-      event.preventDefault();
-      dragged = true;
-      pointerIsDown = false;
-    });
-
-    link.addEventListener('pointercancel', () => {
-      if (pointerIsDown) {
-        dragged = true;
-      }
-      pointerIsDown = false;
-    });
-
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      // Opening is handled on pointerup for mouse/touch and on keydown for keyboard.
-    });
-
-    link.addEventListener('keydown', (event) => {
-      if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      event.stopPropagation();
-      open();
-    });
-  });
+/* ================================================================
+   PATCHER STARTUP
+   ================================================================ */
+function requestStartUpdate(showFeedback = false) {
+  if (!bridge.has() || state.patchReady || state.patching || state.updateRequested) return;
+  state.updateRequested = true;
+  state.patching = true;
+  state.patchReady = false;
+  syncLaunchButtonState();
+  dom.progressFill.classList.add('active');
+  setPatchLog('info', i18n.t('patcherConnecting'));
+  dom.progressSpeed.textContent = i18n.t('speedStarting');
+  const sent = bridge.cmd('start_update');
+  if (!sent) {
+    state.updateRequested = false;
+    state.patching = false;
+    setPatchLog('warn', i18n.t('patcherWebMode'));
+    dom.progressSpeed.textContent = i18n.t('speedNoBridge');
+    syncLaunchButtonState();
+    return;
+  }
+  if (showFeedback) showToast(i18n.t('toastUpdating'), '↻');
 }
 
-function handleLaunch() {
-  if (!state.patchReady || state.patching || state.updateRequested) {
-    showToast('Aún estamos verificando/actualizando parches.', '↻');
-    return;
+function parsePatchList(raw) {
+  return raw.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('//'));
+}
+
+async function loadPatchListSummary() {
+  try {
+    const r = await fetch('./plist.txt', { cache: 'no-store' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const lines = parsePatchList(await r.text());
+    if (dom.patchVersion) dom.patchVersion.textContent = `plist ${lines.length}`;
+    setPatchLog('info', i18n.t('patcherListLoaded', { n: lines.length }));
+    dom.progressSpeed.textContent = i18n.t('speedVerified');
+  } catch {
+    setPatchLog('warn', i18n.t('patcherWebMode'));
+    dom.progressSpeed.textContent = i18n.t('speedWebMode');
+    dom.progressFill.classList.remove('active');
   }
-
-  const login = dom.username.value.trim();
-  const password = dom.password.value;
-
-  if (!login || !password) {
-    showToast('Ingresa tu usuario y contraseña.', '⚠');
-    return;
-  }
-
-  if (!bridge.has()) {
-    showToast('Esta vista no tiene bridge del patcher.', '⚑');
-    return;
-  }
-
-  bridge.json('login', { login, password });
-  showToast(`Lanzando cliente, bienvenido ${login}!`, '▶');
 }
 
 function initPatcherStartup() {
-  dom.playersOnline.innerHTML = '—<span>sin telemetría</span>';
-
-  if (dom.patchVersion) {
-    dom.patchVersion.textContent = '—';
-  }
-
+  dom.playersOnline.innerHTML = '—<span>…</span>';
+  if (dom.patchVersion) dom.patchVersion.textContent = '—';
   dom.progressSpeed.textContent = '—';
-  setPatchLog('info', 'Esperando estado real del patcher...');
+  setPatchLog('info', i18n.t('patcherWaiting'));
   syncLaunchButtonState();
 
-  if (bridge.has()) {
-    requestStartUpdate(false);
-    return;
-  }
+  if (bridge.has()) { requestStartUpdate(false); return; }
 
   let attempts = 0;
-
   const probe = setInterval(() => {
-    attempts += 1;
-
-    if (bridge.has()) {
-      clearInterval(probe);
-      requestStartUpdate(false);
-      return;
-    }
-
-    if (attempts >= 40) {
-      clearInterval(probe);
-      loadPatchListSummary();
-      syncLaunchButtonState();
-    }
+    attempts++;
+    if (bridge.has()) { clearInterval(probe); requestStartUpdate(false); return; }
+    if (attempts >= 40) { clearInterval(probe); loadPatchListSummary(); syncLaunchButtonState(); }
   }, 250);
 }
 
-/* Exponer callbacks globales por si el patcher los invoca desde fuera */
-window.patchingStatusReady = patchingStatusReady;
-window.patchingStatusError = patchingStatusError;
-window.patchingStatusDownloading = patchingStatusDownloading;
-window.patchingStatusInstalling = patchingStatusInstalling;
-window.patchingStatusDownloadAndInstall = patchingStatusDownloadAndInstall;
-window.patchingStatusPatchApplied = patchingStatusPatchApplied;
-window.notificationInProgress = notificationInProgress;
+/* ================================================================
+   LAUNCH
+   ================================================================ */
+function handleLaunch() {
+  if (!state.patchReady || state.patching || state.updateRequested) {
+    showToast(i18n.t('toastPatching'), '↻');
+    return;
+  }
+  const login = dom.username.value.trim();
+  const password = dom.password.value;
+  if (!login || !password) { showToast(i18n.t('toastNeedCreds'), '⚠'); return; }
+  if (!bridge.has()) { showToast(i18n.t('toastNeedBridge'), '⚑'); return; }
 
-/* Si tu patcher usa nombres snake_case, también quedan disponibles */
-window.patching_status_ready = patchingStatusReady;
-window.patching_status_error = patchingStatusError;
-window.patching_status_downloading = patchingStatusDownloading;
-window.patching_status_installing = patchingStatusInstalling;
+  // Save account to history
+  accounts.add(login);
+
+  bridge.json('login', { login, password });
+  showToast(i18n.t('toastLaunching', { user: login }), '▶');
+}
+
+/* ================================================================
+   EXTERNAL LINKS
+   ================================================================ */
+function bindExternalLinks() {
+  const THRESHOLD = 3;
+  const links = document.querySelectorAll(
+    '.topbar-nav a[href], .forgot-link[href], .btn-register[href], .novatools-link[data-href]'
+  );
+
+  links.forEach(link => {
+    const isNovalink = link.hasAttribute('data-href');
+    const externalUrl = isNovalink ? link.dataset.href : link.getAttribute('href');
+    if (!externalUrl || externalUrl === '#') return;
+    if (!isNovalink) link.setAttribute('href', '#');
+
+    let downX = 0, downY = 0, isDown = false, dragged = false;
+    const open = () => openExternalUrl(externalUrl);
+
+    link.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      isDown = true; dragged = false; downX = e.clientX; downY = e.clientY;
+    });
+    link.addEventListener('pointermove', e => {
+      if (!isDown || dragged) return;
+      const dx = e.clientX - downX, dy = e.clientY - downY;
+      if (dx * dx + dy * dy >= THRESHOLD * THRESHOLD) dragged = true;
+    });
+    link.addEventListener('pointerup', () => {
+      if (!isDown) return; isDown = false;
+      if (dragged) { dragged = false; return; } open();
+    });
+    link.addEventListener('pointerleave', () => { if (isDown) dragged = true; });
+    link.addEventListener('lostpointercapture', () => { if (isDown) dragged = true; });
+    link.addEventListener('dragstart', e => { e.preventDefault(); dragged = true; isDown = false; });
+    link.addEventListener('pointercancel', () => { if (isDown) dragged = true; isDown = false; });
+    link.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); });
+    link.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault(); e.stopPropagation(); open();
+    });
+  });
+}
+
+/* ================================================================
+   EXPOSE globals for patcher
+   ================================================================ */
+window.patchingStatusReady               = patchingStatusReady;
+window.patchingStatusError               = patchingStatusError;
+window.patchingStatusDownloading         = patchingStatusDownloading;
+window.patchingStatusInstalling          = patchingStatusInstalling;
+window.patchingStatusDownloadAndInstall  = patchingStatusDownloadAndInstall;
+window.patchingStatusPatchApplied        = patchingStatusPatchApplied;
+window.notificationInProgress            = notificationInProgress;
+
+window.patching_status_ready             = patchingStatusReady;
+window.patching_status_error             = patchingStatusError;
+window.patching_status_downloading       = patchingStatusDownloading;
+window.patching_status_installing        = patchingStatusInstalling;
 window.patching_status_download_and_install = patchingStatusDownloadAndInstall;
-window.patching_status_patch_applied = patchingStatusPatchApplied;
-window.notification_in_progress = notificationInProgress;
+window.patching_status_patch_applied     = patchingStatusPatchApplied;
+window.notification_in_progress          = notificationInProgress;
 
+/* ================================================================
+   EVENT BINDINGS
+   ================================================================ */
+
+// Modal
 dom.modalClose.addEventListener('click', closeModal);
+dom.backdrop.addEventListener('click', e => { if (e.target === dom.backdrop) closeModal(); });
 
-dom.backdrop.addEventListener('click', (e) => {
-  if (e.target === dom.backdrop) {
-    closeModal();
+// Panels: gear + star
+dom.btnOptions.addEventListener('click', e => { e.stopPropagation(); openPanel('options'); });
+dom.btnNovatools.addEventListener('click', e => { e.stopPropagation(); openPanel('novatools'); });
+
+// Close panels on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#panel-options') && !e.target.closest('#btn-options') &&
+      !e.target.closest('#panel-novatools') && !e.target.closest('#btn-novatools')) {
+    closePanels();
   }
 });
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeModal();
-  }
+// Theme toggle
+dom.themeToggleInput.addEventListener('change', () => themeManager.toggle());
+
+// Lang pills (inside options panel)
+document.querySelectorAll('.lang-pill').forEach(pill => {
+  pill.addEventListener('click', () => i18n.setLang(pill.dataset.lang));
 });
 
+// Account switcher clear
+dom.accountClear.addEventListener('click', () => accounts.clear());
+
+// Launch button
 dom.btnLaunch.addEventListener('click', handleLaunch);
 
-['username', 'password'].forEach((id) => {
-  $(id).addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      handleLaunch();
-    }
-  });
+// Enter to submit
+['username', 'password'].forEach(id => {
+  $(id).addEventListener('keydown', e => { if (e.key === 'Enter') handleLaunch(); });
 });
 
-renderNews();
+// Escape: close modal or panels
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (_modalIsOpen) { closeModal(); return; }
+    closePanels();
+  }
+});
+
+/* ================================================================
+   INIT
+   ================================================================ */
+themeManager.init();
+i18n.init();
+
+renderAccountSwitcher();
 bindExternalLinks();
 
 updateClock();
