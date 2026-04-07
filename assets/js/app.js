@@ -39,7 +39,8 @@ const state = {
   pct: 0,
   patchReady: false,
   patching: false,
-  updateRequested: false
+  updateRequested: false,
+  backendSignalReceived: false
 };
 
 function getNewsData() {
@@ -291,6 +292,7 @@ const bridge = {
           setPatchLog('warn', `Bridge error: ${String(err)}`);
           dom.progressSpeed.textContent = 'bridge error';
           dom.progressFill.classList.remove('active');
+          syncLaunchButtonState();
         });
       }
 
@@ -301,6 +303,7 @@ const bridge = {
       setPatchLog('warn', `Bridge error: ${String(err)}`);
       dom.progressSpeed.textContent = 'bridge error';
       dom.progressFill.classList.remove('active');
+      syncLaunchButtonState();
       return false;
     }
   },
@@ -319,24 +322,39 @@ function setPatchLog(type, msg) {
   dom.patchLog.textContent = msg;
 }
 
-function setProgress(target) {
-  const start = state.pct;
-  const duration = 550;
-  const t0 = performance.now();
+function setProgress(target, monotonic = false) {
+  const boundedTarget = Math.max(0, Math.min(100, Number(target) || 0));
+  const next = monotonic ? Math.max(state.pct, boundedTarget) : boundedTarget;
+  state.pct = Math.round(next);
+  dom.progressFill.style.width = `${state.pct}%`;
+  dom.progressPct.textContent = `${state.pct}%`;
+}
 
-  function step(now) {
-    const p = Math.min((now - t0) / duration, 1);
-    const ease = 1 - Math.pow(1 - p, 3);
-    state.pct = Math.round(start + (target - start) * ease);
-    dom.progressFill.style.width = `${state.pct}%`;
-    dom.progressPct.textContent = `${state.pct}%`;
-
-    if (p < 1) {
-      requestAnimationFrame(step);
-    }
+function syncLaunchButtonState() {
+  if (!bridge.has()) {
+    dom.btnLaunch.disabled = true;
+    dom.btnLaunch.innerHTML = '⚑ &nbsp;Solo en patcher';
+    return;
   }
 
-  requestAnimationFrame(step);
+  if (state.patchReady) {
+    dom.btnLaunch.disabled = false;
+    dom.btnLaunch.innerHTML = '▶ &nbsp;Iniciar Sesión y Jugar';
+    return;
+  }
+
+  dom.btnLaunch.disabled = true;
+  if (state.patching || state.updateRequested) {
+    dom.btnLaunch.innerHTML = '↻ &nbsp;Actualizando cliente...';
+    return;
+  }
+
+  if (!state.backendSignalReceived) {
+    dom.btnLaunch.innerHTML = '… &nbsp;Verificando parches...';
+    return;
+  }
+
+  dom.btnLaunch.innerHTML = '⚠ &nbsp;Cliente no listo';
 }
 
 function humanFileSize(size) {
@@ -355,6 +373,7 @@ function requestStartUpdate(showFeedback = false) {
   state.updateRequested = true;
   state.patching = true;
   state.patchReady = false;
+  syncLaunchButtonState();
 
   dom.progressFill.classList.add('active');
   setPatchLog('info', 'Conectando con servidor de parches...');
@@ -367,6 +386,7 @@ function requestStartUpdate(showFeedback = false) {
     state.patching = false;
     setPatchLog('warn', 'Bridge no disponible.');
     dom.progressSpeed.textContent = 'sin bridge';
+    syncLaunchButtonState();
     return;
   }
 
@@ -407,6 +427,7 @@ async function loadPatchListSummary() {
 }
 
 function patchingStatusReady() {
+  state.backendSignalReceived = true;
   state.patchReady = true;
   state.patching = false;
   state.updateRequested = false;
@@ -420,10 +441,12 @@ function patchingStatusReady() {
     dom.patchVersion.textContent = 'ready';
   }
 
+  syncLaunchButtonState();
   showToast('Cliente listo. ¡Que comience la aventura!', '✦');
 }
 
 function patchingStatusError(errorMsg) {
+  state.backendSignalReceived = true;
   state.patchReady = false;
   state.patching = false;
   state.updateRequested = false;
@@ -431,10 +454,12 @@ function patchingStatusError(errorMsg) {
   setPatchLog('warn', `Error: ${errorMsg}`);
   dom.progressSpeed.textContent = 'error';
   dom.progressFill.classList.remove('active');
+  syncLaunchButtonState();
   showToast('Falló la actualización. Revisa el log.', '⚠');
 }
 
 function patchingStatusDownloading(nbDownloaded, nbTotal, bytesDownloaded, bytesTotal, bytesPerSec) {
+  state.backendSignalReceived = true;
   state.patchReady = false;
   state.patching = true;
 
@@ -442,7 +467,7 @@ function patchingStatusDownloading(nbDownloaded, nbTotal, bytesDownloaded, bytes
     ? (100 * bytesDownloaded) / bytesTotal
     : (nbTotal > 0 ? (100 * nbDownloaded) / nbTotal : 0);
 
-  setProgress(pct);
+  setProgress(pct, true);
   setPatchLog('warn', `Descargando parche ${nbDownloaded}/${nbTotal}...`);
 
   const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
@@ -455,19 +480,23 @@ function patchingStatusDownloading(nbDownloaded, nbTotal, bytesDownloaded, bytes
   if (dom.patchVersion) {
     dom.patchVersion.textContent = `patch ${nbDownloaded}/${nbTotal}`;
   }
+  syncLaunchButtonState();
 }
 
 function patchingStatusInstalling(nbInstalled, nbTotal) {
+  state.backendSignalReceived = true;
   state.patchReady = false;
   state.patching = true;
 
   const pct = nbTotal > 0 ? (100 * nbInstalled) / nbTotal : 0;
-  setProgress(pct);
+  setProgress(pct, true);
   setPatchLog('info', `Instalando parche ${nbInstalled}/${nbTotal}...`);
   dom.progressSpeed.textContent = 'instalando';
+  syncLaunchButtonState();
 }
 
 function patchingStatusDownloadAndInstall(nbDownloaded, nbInstalled, nbTotal, bytesPerSec) {
+  state.backendSignalReceived = true;
   state.patchReady = false;
   state.patching = true;
 
@@ -475,7 +504,7 @@ function patchingStatusDownloadAndInstall(nbDownloaded, nbInstalled, nbTotal, by
     ? (100 * (nbDownloaded + nbInstalled)) / (2 * nbTotal)
     : 0;
 
-  setProgress(pct);
+  setProgress(pct, true);
   setPatchLog('warn', `Descargando ${nbDownloaded}/${nbTotal} | Instalando ${nbInstalled}/${nbTotal}`);
 
   const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
@@ -484,6 +513,7 @@ function patchingStatusDownloadAndInstall(nbDownloaded, nbInstalled, nbTotal, by
   if (dom.patchVersion) {
     dom.patchVersion.textContent = `conc. ${nbDownloaded}/${nbInstalled}/${nbTotal}`;
   }
+  syncLaunchButtonState();
 }
 
 function patchingStatusPatchApplied(fileName) {
@@ -497,6 +527,11 @@ function notificationInProgress() {
 }
 
 function handleLaunch() {
+  if (!state.patchReady || state.patching || state.updateRequested) {
+    showToast('Aún estamos verificando/actualizando parches.', '↻');
+    return;
+  }
+
   const login = dom.username.value.trim();
   const password = dom.password.value;
 
@@ -511,14 +546,7 @@ function handleLaunch() {
   }
 
   bridge.json('login', { login, password });
-
-  if (state.patchReady) {
-    bridge.cmd('play');
-    showToast(`Lanzando cliente, bienvenido ${login}!`, '▶');
-    return;
-  }
-
-  requestStartUpdate(true);
+  showToast(`Lanzando cliente, bienvenido ${login}!`, '▶');
 }
 
 function initPatcherStartup() {
@@ -530,6 +558,7 @@ function initPatcherStartup() {
 
   dom.progressSpeed.textContent = '—';
   setPatchLog('info', 'Esperando estado real del patcher...');
+  syncLaunchButtonState();
 
   if (bridge.has()) {
     requestStartUpdate(false);
@@ -550,6 +579,7 @@ function initPatcherStartup() {
     if (attempts >= 40) {
       clearInterval(probe);
       loadPatchListSummary();
+      syncLaunchButtonState();
     }
   }, 250);
 }
