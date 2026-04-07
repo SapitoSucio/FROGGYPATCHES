@@ -270,6 +270,17 @@ function showToast(msg, icon = '⚑') {
   setTimeout(() => dom.toast.classList.remove('show'), 3600);
 }
 
+function openExternalUrl(url) {
+  if (!url) return;
+
+  if (bridge.has()) {
+    bridge.json('open_url', { url });
+    return;
+  }
+
+  window.open(url, '_blank', 'noopener');
+}
+
 const bridge = {
   has() {
     return typeof window.external?.invoke === 'function';
@@ -526,6 +537,21 @@ function notificationInProgress() {
   showToast('Ya hay un update en progreso.', '⚠');
 }
 
+function bindExternalLinks() {
+  const links = document.querySelectorAll(
+    '.topbar-nav a[href], .forgot-link[href], .btn-register[href]'
+  );
+
+  links.forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const url = link.getAttribute('href');
+      openExternalUrl(url);
+    });
+  });
+}
+
 function handleLaunch() {
   if (!state.patchReady || state.patching || state.updateRequested) {
     showToast('Aún estamos verificando/actualizando parches.', '↻');
@@ -627,6 +653,7 @@ dom.btnLaunch.addEventListener('click', handleLaunch);
 });
 
 renderNews();
+bindExternalLinks();
 
 updateClock();
 setInterval(updateClock, 1000);
