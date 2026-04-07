@@ -391,7 +391,7 @@ html, body {
   border-radius: 0 0 0 18px;
   background-image: var(--news-card-image);
   background-size: cover;
-  background-position: center top;
+  background-position: var(--news-card-pos-x, 100%) top;
   opacity: .72;
   -webkit-mask-image: radial-gradient(90% 100% at 100% 0%, #000 16%, rgba(0,0,0,.7) 58%, rgba(0,0,0,.28) 80%, transparent 100%);
   mask-image: radial-gradient(90% 100% at 100% 0%, #000 16%, rgba(0,0,0,.7) 58%, rgba(0,0,0,.28) 80%, transparent 100%);

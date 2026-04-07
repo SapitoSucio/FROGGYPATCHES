@@ -84,21 +84,36 @@ function normalizeImageUrl(value) {
   return value.trim();
 }
 
+function clampPercent(value, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(100, Math.max(0, Math.round(parsed)));
+}
+
 function getCardImage(item) {
-  return normalizeImageUrl(item.cardImage || item.image);
+  const url = normalizeImageUrl(item.cardImage || item.image);
+  if (!url) return null;
+  return {
+    url,
+    posX: clampPercent(item.cardImagePosX, 100)
+  };
 }
 
 function getModalImages(item) {
   const list = [];
 
-  if (Array.isArray(item.images)) {
+  const modalSingle = normalizeImageUrl(item.modalImage || item.image);
+
+  if (Array.isArray(item.images) && item.images.length) {
     item.images.forEach((img) => {
       const normalized = normalizeImageUrl(img);
       if (normalized) list.push(normalized);
     });
+  } else if (modalSingle) {
+    list.push(modalSingle);
   } else {
-    const single = normalizeImageUrl(item.image);
-    if (single) list.push(single);
+    const cardOnly = normalizeImageUrl(item.cardImage);
+    if (cardOnly) list.push(cardOnly);
   }
 
   return list;
@@ -133,7 +148,7 @@ function renderNews() {
     }
 
     card.innerHTML = `
-      ${cardImage ? `<div class="news-card-media" style="--news-card-image: url('${cardImage.replace(/'/g, '%27')}');"></div>` : ''}
+      ${cardImage ? `<div class="news-card-media" style="--news-card-image: url('${cardImage.url.replace(/'/g, '%27')}'); --news-card-pos-x: ${cardImage.posX}%;"></div>` : ''}
       <div class="news-tag ${item.tag}">${getTagLabel(item.tag)}</div>
       <h3>${item.title}</h3>
       <p>${item.excerpt}</p>
@@ -150,9 +165,10 @@ function renderNews() {
 
 function openModal(newsItem) {
   const modalImages = getModalImages(newsItem);
+  const modalPosX = clampPercent(newsItem.modalImagePosX, 50);
   const imagesMarkup = modalImages.map((imageUrl, index) => `
     <figure class="modal-news-figure">
-      <img class="modal-news-image" src="${escapeHtml(imageUrl)}" alt="Imagen ${index + 1} de ${escapeHtml(newsItem.title || 'noticia')}">
+      <img class="modal-news-image" src="${escapeHtml(imageUrl)}" alt="Imagen ${index + 1} de ${escapeHtml(newsItem.title || 'noticia')}" style="object-position: ${modalPosX}% center;">
     </figure>
   `).join('');
 
