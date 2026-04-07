@@ -544,14 +544,20 @@ function bindExternalLinks() {
   );
 
   links.forEach((link) => {
+    const externalUrl = link.getAttribute('href');
+    if (!externalUrl || externalUrl === '#') {
+      return;
+    }
+    // Disable native anchor navigation entirely; we open URLs via bridge only.
+    link.setAttribute('href', '#');
+
     let pointerDownX = 0;
     let pointerDownY = 0;
     let pointerIsDown = false;
     let dragged = false;
 
     const open = () => {
-      const url = link.getAttribute('href');
-      openExternalUrl(url);
+      openExternalUrl(externalUrl);
     };
 
     link.addEventListener('pointerdown', (event) => {
