@@ -87,7 +87,7 @@ function normalizeImageUrl(value) {
 function clampPercent(value, fallback) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(100, Math.max(0, Math.round(parsed)));
+  return Math.min(200, Math.max(-200, Math.round(parsed)));
 }
 
 function getCardImage(item) {
