@@ -543,11 +543,29 @@ function bindExternalLinks() {
   );
 
   links.forEach((link) => {
+    const open = () => {
+      const url = link.getAttribute('href');
+      openExternalUrl(url);
+    };
+
+    link.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      open();
+    });
+
     link.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const url = link.getAttribute('href');
-      openExternalUrl(url);
+      open();
+    });
+
+    link.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      event.stopPropagation();
+      open();
     });
   });
 }
