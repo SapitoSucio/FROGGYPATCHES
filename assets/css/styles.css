@@ -1384,6 +1384,17 @@ html.vt-news-closing .modal {
   /* Keep patcher bar above returning cards during modal close transitions. */
   html.vt-news-closing::view-transition-group(patcher-bar) {
     z-index: 1000;
+    animation: none;
+  }
+
+  html.vt-news-closing::view-transition-old(patcher-bar) {
+    animation: none;
+    opacity: 0;
+  }
+
+  html.vt-news-closing::view-transition-new(patcher-bar) {
+    animation: none;
+    opacity: 1;
   }
 
   /* Keep snapshot boxes filling the animated group so size interpolation is visible. */

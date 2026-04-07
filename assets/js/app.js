@@ -416,26 +416,40 @@ const _supportsViewTransitions = typeof document.startViewTransition === 'functi
 let _activeCardTransitionName = '';
 let _activeTransitionCardEl = null;
 let _modalSourceCardEl = null;
+let _activeOpeningClipStyleEl = null;
 
 function setPatcherBarViewTransitionName(name = '') {
   if (dom.patcherBar) dom.patcherBar.style.viewTransitionName = name;
 }
 
-function applyCardViewportClipForTransition(cardEl) {
-  if (!cardEl || !dom.patcherBar) return;
+function clearOpeningTransitionClipStyle() {
+  if (_activeOpeningClipStyleEl && _activeOpeningClipStyleEl.parentNode) {
+    _activeOpeningClipStyleEl.parentNode.removeChild(_activeOpeningClipStyleEl);
+  }
+  _activeOpeningClipStyleEl = null;
+}
+
+function installOpeningTransitionClipStyle(transitionName, cardEl) {
+  clearOpeningTransitionClipStyle();
+  if (!transitionName || !cardEl || !dom.patcherBar) return;
+
   const cardRect = cardEl.getBoundingClientRect();
   const patcherRect = dom.patcherBar.getBoundingClientRect();
   const overlapBottom = Math.ceil(cardRect.bottom - patcherRect.top);
   if (overlapBottom <= 0) return;
-  const clipBottom = Math.min(overlapBottom, Math.ceil(cardRect.height));
-  cardEl.style.clipPath = `inset(0 0 ${clipBottom}px 0)`;
-  cardEl.style.webkitClipPath = `inset(0 0 ${clipBottom}px 0)`;
-}
 
-function clearCardViewportClipForTransition(cardEl) {
-  if (!cardEl) return;
-  cardEl.style.clipPath = '';
-  cardEl.style.webkitClipPath = '';
+  const clipBottom = Math.min(overlapBottom, Math.ceil(cardRect.height));
+  const style = document.createElement('style');
+  style.setAttribute('data-vt-news-open-clip', transitionName);
+  style.textContent = `
+html.vt-news-opening::view-transition-image-pair(${transitionName}) {
+  overflow: clip;
+}
+html.vt-news-opening::view-transition-old(${transitionName}) {
+  clip-path: inset(0 0 ${clipBottom}px 0);
+}`;
+  document.head.appendChild(style);
+  _activeOpeningClipStyleEl = style;
 }
 
 function makeViewTransitionName() {
@@ -473,6 +487,7 @@ function setModalContent(newsItem) {
 
 function openModal(newsItem, cardEl = null) {
   setPatcherBarViewTransitionName('');
+  clearOpeningTransitionClipStyle();
 
   if (!_supportsViewTransitions || !cardEl) {
     _modalSourceCardEl = null;
@@ -488,7 +503,7 @@ function openModal(newsItem, cardEl = null) {
   _activeCardTransitionName = makeViewTransitionName();
   _activeTransitionCardEl = cardEl;
   _modalSourceCardEl = cardEl;
-  applyCardViewportClipForTransition(cardEl);
+  installOpeningTransitionClipStyle(_activeCardTransitionName, cardEl);
   cardEl.style.viewTransitionName = _activeCardTransitionName;
 
   const vt = document.startViewTransition(() => {
@@ -505,7 +520,8 @@ function openModal(newsItem, cardEl = null) {
   vt.finished
     .catch(() => {})
     .finally(() => {
-      clearCardViewportClipForTransition(_activeTransitionCardEl);
+      setPatcherBarViewTransitionName('');
+      clearOpeningTransitionClipStyle();
       clearActiveViewTransitionNames(_activeTransitionCardEl);
       document.documentElement.classList.remove('vt-news-opening');
     });
