@@ -539,7 +539,6 @@ function notificationInProgress() {
 
 function bindExternalLinks() {
   const DRAG_CLICK_THRESHOLD_PX = 3;
-  const SUPPRESS_CLICK_MS = 700;
   const links = document.querySelectorAll(
     '.topbar-nav a[href], .forgot-link[href], .btn-register[href]'
   );
@@ -549,7 +548,6 @@ function bindExternalLinks() {
     let pointerDownY = 0;
     let pointerIsDown = false;
     let dragged = false;
-    let suppressClickUntil = 0;
 
     const open = () => {
       const url = link.getAttribute('href');
@@ -570,7 +568,6 @@ function bindExternalLinks() {
       const dy = event.clientY - pointerDownY;
       if ((dx * dx + dy * dy) >= (DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX)) {
         dragged = true;
-        suppressClickUntil = Date.now() + SUPPRESS_CLICK_MS;
       }
     });
 
@@ -581,7 +578,6 @@ function bindExternalLinks() {
     link.addEventListener('pointercancel', () => {
       if (pointerIsDown) {
         dragged = true;
-        suppressClickUntil = Date.now() + SUPPRESS_CLICK_MS;
       }
       pointerIsDown = false;
     });
@@ -589,7 +585,7 @@ function bindExternalLinks() {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      if (dragged || Date.now() < suppressClickUntil) {
+      if (dragged) {
         dragged = false;
         return;
       }
