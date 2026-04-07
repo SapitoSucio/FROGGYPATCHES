@@ -3,900 +3,338 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ragnarok Online — Patcher</title>
+<title>Vanaheim — Ragnarok Online</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --void: #04060e;
-    --deep: #080c1a;
-    --surface: #0e1328;
-    --raised: #141b35;
-    --border: rgba(180,150,80,0.18);
+    --void:         #04060e;
+    --border:       rgba(180,150,80,0.18);
     --border-hover: rgba(220,185,100,0.38);
-    --gold: #c8a84b;
-    --gold-light: #e8cc80;
-    --gold-dim: #7a6228;
-    --crimson: #8b1a2a;
-    --crimson-glow: rgba(139,26,42,0.35);
-    --sky: #2a5fa8;
-    --text: #d8cdb8;
-    --text-dim: #7a7060;
-    --text-muted: #4a4538;
-    --radius: 14px;
-    --radius-sm: 8px;
-    --radius-pill: 999px;
-    --patcher-bar-height: 58px;
+    --gold:         #c8a84b;
+    --gold-light:   #e8cc80;
+    --gold-dim:     #7a6228;
+    --crimson:      #8b1a2a;
+    --text:         #d8cdb8;
+    --text-dim:     #7a7060;
+    --text-muted:   #4a4538;
+    --radius:       14px;
+    --radius-pill:  999px;
+    --topbar-h:     52px;
+    --patcher-h:    80px;
   }
 
-  html, body {
-    height: 100%;
-    background: var(--void);
-    color: var(--text);
-    font-family: 'Crimson Pro', Georgia, serif;
-    font-size: 16px;
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
+  html, body { height: 100%; overflow: hidden; background: var(--void); color: var(--text); font-family: 'Crimson Pro', Georgia, serif; font-size: 16px; line-height: 1.6; }
 
-  body {
-    padding-bottom: calc(var(--patcher-bar-height) + 1rem);
-  }
-
-  .bg-layer {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-
+  .bg-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
   .bg-layer::before {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(42,95,168,0.22) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,26,42,0.18) 0%, transparent 55%),
-      radial-gradient(ellipse 50% 30% at 10% 80%, rgba(40,30,10,0.4) 0%, transparent 50%);
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(42,95,168,.22) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,26,42,.18) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 30% at 10% 80%, rgba(40,30,10,.4) 0%, transparent 50%);
   }
-
   .bg-grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(180,150,80,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(180,150,80,0.04) 1px, transparent 1px);
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(180,150,80,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(180,150,80,.04) 1px, transparent 1px);
     background-size: 48px 48px;
     mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
   }
+  #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .55; }
 
-  #particles {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.55;
-  }
+  /* ── Shell ── */
+  .shell { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100vh; }
 
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-  }
-
+  /* ── Topbar ── */
   .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-    height: 52px;
+    flex-shrink: 0; height: var(--topbar-h);
+    display: flex; align-items: center;
+    padding: 0 1.75rem; gap: 1.25rem;
     border-bottom: 1px solid var(--border);
-    background: rgba(4,6,14,0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(4,6,14,.85); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    z-index: 10;
   }
+  .topbar-logo { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 800; letter-spacing: .25em; color: var(--gold); text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+  .topbar-logo span { color: var(--text-dim); font-weight: 400; font-size: 11px; letter-spacing: .15em; margin-left: 6px; }
 
-  .topbar-logo {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    text-transform: uppercase;
+  .topbar-nav { display: flex; align-items: center; gap: .15rem; flex: 1; justify-content: center; }
+  .nav-link {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 13px; border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--text-dim); text-decoration: none;
+    transition: color .2s, border-color .2s, background .2s;
+    white-space: nowrap;
   }
+  .nav-link:hover { color: var(--gold); border-color: var(--border); background: rgba(200,168,75,.06); }
+  .nav-icon { width: 13px; height: 13px; flex-shrink: 0; fill: currentColor; }
 
-  .topbar-logo span {
-    color: var(--text-dim);
-    font-weight: 400;
-  }
-
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-  }
-
-  .server-clock {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .clock-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #3adb76;
-    box-shadow: 0 0 6px #3adb76;
-    animation: pulse-dot 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-dot {
-    0%,100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-
-  .clock-time {
-    color: var(--gold-light);
-    font-size: 13px;
-    letter-spacing: 0.05em;
-  }
-
-  .clock-label {
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-  }
-
+  .topbar-right { display: flex; align-items: center; gap: 1.1rem; flex-shrink: 0; }
+  .server-clock { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; }
+  .clock-dot { width: 7px; height: 7px; border-radius: 50%; background: #3adb76; box-shadow: 0 0 6px #3adb76; animation: blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .clock-time  { font-size: 13px; color: var(--gold-light); letter-spacing: .05em; }
+  .clock-label { font-size: 10px; color: var(--text-muted); letter-spacing: .1em; }
   .status-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    border-radius: var(--radius-pill);
-    border: 1px solid rgba(58,219,118,0.25);
-    background: rgba(58,219,118,0.07);
-    font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
-    color: #3adb76;
-    letter-spacing: 0.08em;
+    display: flex; align-items: center; gap: 6px; padding: 4px 11px;
+    border-radius: var(--radius-pill); border: 1px solid rgba(58,219,118,.25); background: rgba(58,219,118,.07);
+    font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #3adb76; letter-spacing: .08em;
   }
 
-  main {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 380px;
-    gap: 0;
-    align-items: stretch;
-    min-height: 0;
-  }
+  /* ── Content ── */
+  .content { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 380px; }
 
-  .panel-left,
-  .panel-right {
-    min-height: 0;
-  }
+  /* ── Left ── */
+  .panel-left { display: flex; flex-direction: column; border-right: 1px solid var(--border); min-height: 0; }
 
-  .panel-left {
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .banner {
-    position: relative;
-    height: clamp(210px, 28vh, 260px);
-    overflow: hidden;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
+  .banner { flex-shrink: 0; height: 138px; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
   .banner-bg {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse 70% 120% at 30% 50%, rgba(42,95,168,0.35) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 80% at 80% 30%, rgba(139,26,42,0.25) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 140% at 25% 60%, rgba(42,95,168,.38) 0%, transparent 60%),
+      radial-gradient(ellipse 55% 90%  at 85% 20%, rgba(139,26,42,.28) 0%, transparent 55%),
       linear-gradient(160deg, #060914 0%, #0a1020 40%, #110818 100%);
   }
+  .rune-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(200,168,75,.1); animation: spin linear infinite; }
+  .rune-ring-1 { width:280px;height:280px;top:-120px;left:-80px;animation-duration:60s; }
+  .rune-ring-2 { width:175px;height:175px;top:-80px;left:-30px;animation-duration:42s;animation-direction:reverse;border-color:rgba(200,168,75,.07); }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  .rune-ring {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid rgba(200,168,75,0.12);
-    animation: spin-ring linear infinite;
-  }
+  .banner-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: center; padding: 0 2.5rem; }
+  .banner-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .28em; color: var(--gold-dim); text-transform: uppercase; margin-bottom: .2rem; }
+  .banner-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 800; line-height: 1; color: #fff; text-shadow: 0 2px 40px rgba(200,168,75,.3), 0 0 80px rgba(42,95,168,.4); }
+  .banner-title em { font-style: normal; color: var(--gold-light); }
+  .banner-sub { font-size: 12px; font-style: italic; color: rgba(216,205,184,.42); margin-top: .28rem; }
 
-  .rune-ring-1 { width: 360px; height: 360px; top: -90px; left: -110px; animation-duration: 60s; }
-  .rune-ring-2 { width: 230px; height: 230px; top: -25px; left: -45px; animation-duration: 45s; animation-direction: reverse; border-color: rgba(200,168,75,0.08); }
-  .rune-ring-3 { width: 130px; height: 130px; top: 28px; left: 10px; animation-duration: 30s; border-color: rgba(139,26,42,0.15); }
-
-  @keyframes spin-ring {
-    to { transform: rotate(360deg); }
-  }
-
-  .rune-ring::after {
-    content: '᚛ ᚜ ᚛ ᚜ ᚛ ᚜ ᚛ ᚜';
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    font-size: 11px;
-    color: rgba(200,168,75,0.25);
-    letter-spacing: 8px;
-    white-space: nowrap;
-  }
-
-  .banner-content {
-    position: relative;
-    z-index: 2;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 1.4rem 2rem 1.6rem;
-  }
-
-  .banner-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.28em;
-    color: var(--gold-dim);
-    text-transform: uppercase;
-    margin-bottom: 0.45rem;
-  }
-
-  .banner-title {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(32px, 4vw, 38px);
-    font-weight: 800;
-    line-height: 1;
-    color: #fff;
-    text-shadow: 0 2px 40px rgba(200,168,75,0.3), 0 0 80px rgba(42,95,168,0.4);
-    margin-bottom: 0.3rem;
-  }
-
-  .banner-title em {
-    font-style: normal;
-    color: var(--gold-light);
-  }
-
-  .banner-sub {
-    font-size: 14px;
-    font-style: italic;
-    color: rgba(216,205,184,0.6);
-    max-width: 34rem;
-  }
-
-  .banner-version {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--gold-dim);
-    letter-spacing: 0.1em;
-    border: 1px solid var(--border);
-    padding: 4px 10px;
-    border-radius: var(--radius-pill);
-    background: rgba(4,6,14,0.5);
-  }
-
+  /* News */
   .news-area {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 1.25rem 1.5rem 1.5rem;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    flex: 1; min-height: 0; overflow-y: auto; padding: 1.1rem 2rem;
+    scrollbar-width: thin; scrollbar-color: rgba(200,168,75,.28) transparent;
   }
-
-  .news-area::-webkit-scrollbar { width: 4px; }
+  .news-area::-webkit-scrollbar { width: 5px; }
   .news-area::-webkit-scrollbar-track { background: transparent; }
-  .news-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .news-area::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(200,168,75,.5), rgba(200,168,75,.1)); border-radius: 3px; }
+  .news-area::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
+  .section-header { display: flex; align-items: center; gap: .75rem; margin-bottom: .85rem; }
+  .section-line { flex:1; height:1px; background: var(--border); }
+  .section-title { font-family: 'Cinzel', serif; font-size: 10px; font-weight: 600; letter-spacing: .25em; color: var(--gold-dim); text-transform: uppercase; white-space: nowrap; }
 
-  .section-line {
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .section-title {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.25em;
-    color: var(--gold-dim);
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .news-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
+  .news-list { display: flex; flex-direction: column; gap: .58rem; }
   .news-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: rgba(14,19,40,0.6);
-    padding: 1rem 1.25rem;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: rgba(14,19,40,.6); padding: .82rem 1.1rem;
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s, transform 0.15s;
-    animation: fadein 0.4s ease both;
+    transition: border-color .22s, background .22s, transform .18s;
+    animation: fadein .4s ease both;
   }
-
-  .news-card:hover {
-    border-color: var(--border-hover);
-    background: rgba(20,27,53,0.8);
-    transform: translateX(3px);
-  }
-
+  .news-card:hover { border-color: var(--border-hover); background: rgba(20,27,53,.8); transform: translateX(4px); }
   .news-tag {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: var(--radius-pill);
-    margin-bottom: 0.5rem;
+    display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    letter-spacing: .15em; text-transform: uppercase; padding: 2px 8px;
+    border-radius: var(--radius-pill); margin-bottom: .32rem;
   }
+  .news-tag.update { background: rgba(42,95,168,.2);  color: #7ab2e8; border: 1px solid rgba(42,95,168,.3); }
+  .news-tag.event  { background: rgba(139,26,42,.2);  color: #e87a8a; border: 1px solid rgba(139,26,42,.3); }
+  .news-tag.maint  { background: rgba(122,98,40,.2);  color: var(--gold); border: 1px solid rgba(200,168,75,.3); }
+  .news-card h3 { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: .18rem; line-height: 1.35; }
+  .news-card p  { font-size: 13px; color: var(--text-dim); font-style: italic; line-height: 1.42; }
+  .news-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: .3rem; }
+  .news-read-more { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .08em; color: var(--gold-dim); margin-top: .38rem; display: inline-flex; align-items: center; gap: 4px; transition: color .2s; }
+  .news-card:hover .news-read-more { color: var(--gold-light); }
 
-  .news-tag.update { background: rgba(42,95,168,0.2); color: #7ab2e8; border: 1px solid rgba(42,95,168,0.3); }
-  .news-tag.event  { background: rgba(139,26,42,0.2); color: #e87a8a; border: 1px solid rgba(139,26,42,0.3); }
-  .news-tag.maint  { background: rgba(122,98,40,0.2); color: var(--gold); border: 1px solid rgba(200,168,75,0.3); }
+  /* ── Right ── */
+  .panel-right { display: flex; flex-direction: column; background: rgba(4,6,14,.55); overflow: hidden; }
 
-  .news-card h3 {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.3rem;
-    line-height: 1.35;
-  }
+  .auth-area { padding: 1.5rem 2rem 1.1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .auth-header { text-align: center; margin-bottom: 1.3rem; }
+  .auth-crest { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--border); background: rgba(20,27,53,.8); display: flex; align-items: center; justify-content: center; margin: 0 auto .5rem; font-size: 20px; }
+  .auth-header h2 { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: .1em; margin-bottom: .1rem; }
+  .auth-header p  { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
-  .news-card p {
-    font-size: 13px;
-    color: var(--text-dim);
-    font-style: italic;
-    line-height: 1.5;
-  }
-
-  .news-date {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    margin-top: 0.5rem;
-  }
-
-  .panel-right {
-    display: flex;
-    flex-direction: column;
-    background: rgba(4,6,14,0.55);
-  }
-
-  .auth-area {
-    padding: 1.5rem 1.5rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .auth-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .auth-crest {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: rgba(20,27,53,0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 0.75rem;
-    font-size: 26px;
-  }
-
-  .auth-header h2 {
-    font-family: 'Cinzel', serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: 0.1em;
-    margin-bottom: 0.2rem;
-  }
-
-  .auth-header p {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-style: italic;
-  }
-
-  .form-group { margin-bottom: 1rem; }
-
-  .form-label {
-    display: block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 0.4rem;
-  }
-
+  .form-group { margin-bottom: .75rem; }
+  .form-label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: .28rem; }
   .input-wrap { position: relative; }
-
-  .input-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    opacity: 0.4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    pointer-events: none;
-  }
-
+  .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; opacity: .4; pointer-events: none; }
   .form-input {
-    width: 100%;
-    background: rgba(8,12,26,0.8);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.6rem 0.85rem 0.6rem 2.2rem;
-    color: var(--text);
-    font-family: 'Crimson Pro', serif;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    -webkit-appearance: none;
+    width: 100%; background: rgba(8,12,26,.85); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: .54rem .85rem .54rem 2.1rem; color: var(--text); font-family: 'Crimson Pro', serif; font-size: 15px;
+    outline: none; transition: border-color .2s, box-shadow .2s; -webkit-appearance: none;
   }
+  .form-input::placeholder { color: var(--text-muted); font-style: italic; }
+  .form-input:focus { border-color: rgba(200,168,75,.5); box-shadow: 0 0 0 3px rgba(200,168,75,.07); }
 
-  .form-input::placeholder {
-    color: var(--text-muted);
-    font-style: italic;
-  }
-
-  .form-input:focus {
-    border-color: rgba(200,168,75,0.5);
-    box-shadow: 0 0 0 3px rgba(200,168,75,0.08);
-  }
-
-  .form-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-  }
-
-  .remember-check {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-  }
-
-  .remember-check input[type=checkbox] {
-    width: 14px;
-    height: 14px;
-    accent-color: var(--gold);
-    cursor: pointer;
-  }
-
-  .remember-check span {
-    font-size: 12px;
-    color: var(--text-dim);
-    font-style: italic;
-    user-select: none;
-  }
-
-  .forgot-link {
-    font-size: 12px;
-    color: var(--gold-dim);
-    text-decoration: none;
-    font-style: italic;
-    transition: color 0.2s;
-  }
-
+  .form-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
+  .remember-check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .remember-check input[type=checkbox] { width:14px;height:14px;accent-color:var(--gold);cursor:pointer; }
+  .remember-check span { font-size: 12px; color: var(--text-dim); font-style: italic; user-select: none; }
+  .forgot-link { font-size: 12px; color: var(--gold-dim); text-decoration: none; font-style: italic; transition: color .2s; }
   .forgot-link:hover { color: var(--gold); }
 
   .btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 0.7rem 1rem;
-    border-radius: var(--radius);
-    border: none;
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: .64rem 1rem; border-radius: var(--radius); border: none;
+    font-family: 'Cinzel', serif; font-size: 12px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase;
+    cursor: pointer; transition: opacity .2s, transform .15s, box-shadow .2s;
+    text-decoration: none;
   }
+  .btn:active { transform: scale(.98); }
 
-  .btn:active { transform: scale(0.98); }
-
-  .btn-login {
-    background: linear-gradient(135deg, #b8922a 0%, #d4a83a 50%, #b8922a 100%);
-    color: #1a1200;
-    box-shadow: 0 4px 24px rgba(180,145,40,0.25);
-  }
-
-  .btn-login:hover { opacity: 0.9; box-shadow: 0 6px 30px rgba(180,145,40,0.38); }
-
-  .auth-divider {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 1rem 0;
-  }
-
-  .auth-divider-line {
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .auth-divider span {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-style: italic;
-  }
-
-  .btn-register {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    font-size: 12px;
-  }
-
-  .btn-register:hover { border-color: var(--border-hover); color: var(--text); }
-
-  .panel-right-body {
-    flex: 1;
-    min-height: 0;
-    padding: 1rem 1.5rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .server-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-  }
-
-  .stat-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: rgba(8,12,26,0.5);
-    padding: 0.75rem 1rem;
-    transition: border-color 0.2s;
-  }
-
-  .stat-card:hover { border-color: var(--border-hover); }
-
-  .stat-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 0.3rem;
-  }
-
-  .stat-value {
-    font-family: 'Cinzel', serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--gold-light);
-    line-height: 1;
-  }
-
-  .stat-value span {
-    font-size: 11px;
-    color: var(--text-dim);
-    font-family: 'Crimson Pro', serif;
-    font-weight: 300;
-    margin-left: 3px;
-  }
-
-  .patcher-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: var(--patcher-bar-height);
-    z-index: 30;
-    border-top: 1px solid var(--border);
-    background: rgba(4,6,14,0.9);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: 0 -12px 28px rgba(0,0,0,0.28);
-  }
-
-  .patcher-bar-inner {
-    width: 100%;
-    height: 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    align-items: center;
-    gap: 0.9rem;
-    padding: 0.45rem 1rem;
-  }
-
-  .patcher-bar .section-header,
-  .patch-status-header,
-  .patch-status-label,
-  .patch-version-pill,
-  .progress-speed {
-    display: none;
-  }
-
-  .patch-status {
-    position: relative;
-    min-width: 0;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    padding: 0;
-    box-shadow: none;
-  }
-
-  .patch-log {
-    height: auto;
-    overflow: hidden;
-    margin: 0 0 0.35rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--text-dim);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .patch-log-line {
-    display: block;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    animation: none;
-  }
-
-  .patch-log-line::before {
-    content: '';
-  }
-
-  .patch-log-line.ok   { color: #3adb76; }
-  .patch-log-line.info { color: var(--text-dim); }
-  .patch-log-line.warn { color: var(--gold); }
-
-  .progress-track {
-    height: 4px;
-    background: rgba(20,27,53,0.95);
-    border-radius: var(--radius-pill);
-    overflow: hidden;
-    border: 1px solid rgba(180,150,80,0.1);
-  }
-
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #7a6228, #d4a83a, #e8cc80);
-    border-radius: var(--radius-pill);
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-  }
-
-  .progress-fill::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 24px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28));
-    animation: shimmer 1.5s ease-in-out infinite;
-  }
-
-  @keyframes shimmer {
-    0%,100% { opacity: 0; }
-    50% { opacity: 1; }
-  }
-
-  .progress-info {
-    display: block;
-    margin: 0;
-  }
-
-  .progress-pct {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--gold-dim);
-    min-width: 44px;
-    text-align: right;
-  }
-
-  .play-section {
-    margin-top: 0;
-    width: 148px;
-  }
-
-  .btn-play {
-    height: 38px;
-    padding: 0 0.9rem;
-    border-radius: 10px;
+  .btn-launch {
     background: linear-gradient(135deg, #6b1219 0%, #8b1a2a 50%, #6b1219 100%);
     color: #ffd5a8;
-    border: 1px solid rgba(139,26,42,0.6);
-    box-shadow: 0 4px 18px rgba(139,26,42,0.22), inset 0 1px 0 rgba(255,200,150,0.08);
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    white-space: nowrap;
+    border: 1px solid rgba(139,26,42,.6);
+    box-shadow: 0 4px 22px rgba(139,26,42,.28), inset 0 1px 0 rgba(255,200,150,.1);
   }
+  .btn-launch:hover { opacity: .9; box-shadow: 0 6px 30px rgba(139,26,42,.42), inset 0 1px 0 rgba(255,200,150,.15); }
 
-  .btn-play:hover {
-    opacity: 0.92;
-    box-shadow: 0 6px 24px rgba(139,26,42,0.32), inset 0 1px 0 rgba(255,200,150,0.12);
-  }
+  .auth-divider { display: flex; align-items: center; gap: .75rem; margin: .75rem 0; }
+  .auth-divider-line { flex:1; height:1px; background:var(--border); }
+  .auth-divider span { font-size: 11px; color: var(--text-muted); font-style: italic; }
 
-  .btn-play:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-    transform: none;
-  }
+  .btn-register { background: transparent; border: 1px solid var(--border); color: var(--text-dim); font-size: 11px; }
+  .btn-register:hover { border-color: var(--border-hover); color: var(--text); }
 
-  .play-icon { font-size: 13px; }
+  .stats-area { padding: 1rem 2rem; flex-shrink: 0; }
+  .server-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .58rem; margin-top: .75rem; }
+  .stat-card { border: 1px solid var(--border); border-radius: var(--radius); background: rgba(8,12,26,.5); padding: .58rem .9rem; transition: border-color .2s; }
+  .stat-card:hover { border-color: var(--border-hover); }
+  .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .2rem; }
+  .stat-value { font-family: 'Cinzel', serif; font-size: 17px; font-weight: 600; color: var(--gold-light); line-height: 1; }
+  .stat-value span { font-size: 10px; color: var(--text-dim); font-family: 'Crimson Pro', serif; font-weight: 300; margin-left: 3px; }
 
-  footer {
+  /* ── Patcher bar ── */
+  .patcher-bar {
+    flex-shrink: 0; width: 100%; height: var(--patcher-h);
     border-top: 1px solid var(--border);
-    padding: 0.75rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(4,6,14,0.8);
-    backdrop-filter: blur(10px);
+    background: rgba(4,6,14,.94); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    display: flex; align-items: center; gap: 1.5rem; padding: 0 2rem; z-index: 10;
   }
+  .patcher-left { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5px; }
+  .patcher-meta { display: flex; align-items: center; gap: .85rem; }
+  .patcher-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold-dim); white-space: nowrap; }
+  .patcher-log-line { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .patcher-log-line::before { content: '› '; opacity: .45; }
+  .patcher-log-line.ok   { color: #3adb76; }
+  .patcher-log-line.warn { color: var(--gold); }
+  .progress-row { display: flex; align-items: center; gap: 10px; }
+  .progress-track { flex: 1; height: 5px; background: rgba(20,27,53,.9); border-radius: var(--radius-pill); overflow: hidden; border: 1px solid var(--border); }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #7a6228, #d4a83a, #e8cc80); border-radius: var(--radius-pill); transition: width .6s cubic-bezier(.4,0,.2,1); position: relative; }
+  .progress-fill.active::after { content: ''; position: absolute; right:0;top:0;bottom:0;width:30px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.3)); animation: shimmer 1.5s ease-in-out infinite; }
+  @keyframes shimmer { 0%,100%{opacity:0} 50%{opacity:1} }
+  .progress-pct { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold-dim); white-space: nowrap; min-width: 34px; text-align: right; }
+  .progress-speed { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); white-space: nowrap; min-width: 68px; }
+  .patch-version-pill { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-pill); padding: 2px 8px; }
 
-  .footer-left {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
+  /* ── News Modal — glassmorphism ── */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(4,6,14,.62);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center; padding: 2rem;
+    opacity: 0; pointer-events: none;
+    transition: opacity .32s ease;
   }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
 
-  .footer-links {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .footer-links a {
-    font-size: 12px;
-    color: var(--text-muted);
-    text-decoration: none;
-    font-style: italic;
-    transition: color 0.2s;
-  }
-
-  .footer-links a:hover { color: var(--gold-dim); }
-
-  @keyframes fadein {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: none; }
-  }
-
-  .toast {
-    position: fixed;
-    bottom: calc(var(--patcher-bar-height) + 1.5rem);
-    right: 1.5rem;
-    z-index: 100;
-    background: rgba(20,27,53,0.95);
-    border: 1px solid var(--border-hover);
-    border-radius: var(--radius);
-    padding: 0.85rem 1.25rem;
-    font-family: 'Crimson Pro', serif;
-    font-size: 14px;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transform: translateY(80px);
+  .modal {
+    position: relative; width: 100%; max-width: 560px; max-height: 78vh;
+    background: rgba(12,17,34,.75);
+    border: 1px solid rgba(200,168,75,.2);
+    border-radius: 20px;
+    box-shadow: 0 36px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.04) inset;
+    backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+    display: flex; flex-direction: column; overflow: hidden;
+    transform: translateY(28px) scale(.965);
     opacity: 0;
-    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
-    max-width: 300px;
+    transition: transform .42s cubic-bezier(.34,1.25,.64,1), opacity .32s ease;
+  }
+  .modal-backdrop.open .modal { transform: none; opacity: 1; }
+
+  /* Glass highlight line */
+  .modal::before {
+    content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,168,75,.4), transparent);
+  }
+  /* Subtle inner glow */
+  .modal::after {
+    content: ''; position: absolute; inset: 0; border-radius: 20px; pointer-events: none;
+    background: radial-gradient(ellipse 60% 30% at 50% 0%, rgba(200,168,75,.05) 0%, transparent 70%);
   }
 
-  .toast.show {
-    transform: none;
-    opacity: 1;
+  .modal-header { padding: 1.5rem 1.75rem .95rem; border-bottom: 1px solid rgba(200,168,75,.1); flex-shrink: 0; }
+  .modal-title { font-family: 'Cinzel', serif; font-size: 16.5px; font-weight: 600; color: var(--text); line-height: 1.3; margin-top: .55rem; }
+  .modal-date  { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: .4rem; }
+
+  .modal-body {
+    flex: 1; overflow-y: auto; padding: 1.2rem 1.75rem 1.5rem;
+    scrollbar-width: thin; scrollbar-color: rgba(200,168,75,.2) transparent;
   }
+  .modal-body::-webkit-scrollbar { width: 4px; }
+  .modal-body::-webkit-scrollbar-thumb { background: rgba(200,168,75,.25); border-radius: 2px; }
+  .modal-body p { font-size: 15px; color: rgba(216,205,184,.78); line-height: 1.8; font-style: italic; }
+  .modal-body p + p { margin-top: .9rem; }
+  .modal-detail { font-style: normal !important; color: var(--text-dim) !important; font-size: 13.5px !important; margin-top: .75rem; }
 
-  .toast-icon { font-size: 16px; }
-
-  @media (max-width: 1100px) {
-    .play-section {
-      width: 132px;
-    }
-
-    .btn-play {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-    }
+  .modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 1px solid var(--border); background: rgba(8,12,26,.55);
+    color: var(--text-dim); font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: border-color .2s, color .2s, background .2s;
+    z-index: 2;
   }
+  .modal-close:hover { border-color: var(--border-hover); color: var(--text); background: rgba(20,27,53,.8); }
 
-  @media (max-width: 820px) {
-    :root {
-      --patcher-bar-height: 58px;
-    }
-
-    main { grid-template-columns: 1fr; }
-    .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
-    .banner { height: 180px; }
-    .banner-content { padding: 1.1rem 1.25rem 1.2rem; }
-    .banner-title { font-size: 28px; }
-
-    .news-area,
-    .auth-area,
-    .panel-right-body,
-    .patcher-bar-inner {
-      padding-left: 0.9rem;
-      padding-right: 0.9rem;
-      gap: 0.65rem;
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .progress-info {
-      display: none;
-    }
-
-    .play-section {
-      width: 116px;
-    }
-
-    .patch-log {
-      font-size: 11px;
-    }
-
-    footer {
-      flex-direction: column;
-      gap: 0.75rem;
-      align-items: flex-start;
-    }
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: calc(var(--patcher-h) + 1rem); right: 1.5rem; z-index: 200;
+    background: rgba(18,24,46,.97); border: 1px solid var(--border-hover); border-radius: var(--radius);
+    padding: .72rem 1.1rem; font-family: 'Crimson Pro', serif; font-size: 14px; color: var(--text);
+    display: flex; align-items: center; gap: .5rem;
+    transform: translateY(30px); opacity: 0;
+    transition: transform .38s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+    max-width: 280px; pointer-events: none;
   }
+  .toast.show { transform: none; opacity: 1; }
+
+  @keyframes fadein { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:none} }
 </style>
 </head>
 <body>
+
 <div class="bg-layer"><div class="bg-grid"></div></div>
 <canvas id="particles"></canvas>
 
-<div class="wrapper">
+<div class="shell">
+
+  <!-- TOPBAR -->
   <header class="topbar">
-    <div class="topbar-logo">
-      Midgard <span>/ Private Server</span>
-    </div>
+    <div class="topbar-logo">Vanaheim <span>/ Ragnarok Online</span></div>
+
+    <nav class="topbar-nav">
+      <a class="nav-link" href="https://discord.com/invite/YGbcW9xJUK" target="_blank" rel="noopener">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Discord
+      </a>
+      <a class="nav-link" href="https://vanaheim-ragnarok.online/wiki-test/index.php?title=P%C3%A1gina_principal" target="_blank" rel="noopener">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        Wiki
+      </a>
+      <a class="nav-link" href="https://www.instagram.com/vanaheim.ragnarok/" target="_blank" rel="noopener">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        Instagram
+      </a>
+      <a class="nav-link" href="https://www.youtube.com/@vanaheim.ragnarok" target="_blank" rel="noopener">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        Youtube
+      </a>
+    </nav>
+
     <div class="topbar-right">
       <div class="server-clock">
         <div class="clock-dot"></div>
@@ -912,20 +350,21 @@
     </div>
   </header>
 
-  <main>
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- LEFT -->
     <div class="panel-left">
       <div class="banner">
         <div class="banner-bg">
           <div class="rune-ring rune-ring-1"></div>
           <div class="rune-ring rune-ring-2"></div>
-          <div class="rune-ring rune-ring-3"></div>
         </div>
         <div class="banner-content">
           <div class="banner-eyebrow">Bienvenido al mundo de</div>
-          <h1 class="banner-title">Ragnarok<br><em>Online</em></h1>
+          <h1 class="banner-title">Vanaheim <em>RO</em></h1>
           <p class="banner-sub">La aventura te aguarda entre las nieblas de Midgard</p>
         </div>
-        <div class="banner-version">v2.4.1 · rAthena</div>
       </div>
 
       <div class="news-area">
@@ -934,45 +373,17 @@
           <div class="section-title">Últimas Noticias</div>
           <div class="section-line"></div>
         </div>
-
-        <div class="news-list">
-          <div class="news-card" style="animation-delay:0.05s">
-            <div class="news-tag update">Actualización</div>
-            <h3>Parche 2.4.1 — Nuevas instancias de Eclage</h3>
-            <p>Se añaden dos nuevas mazmorras de instancia en Eclage con drops exclusivos y equipo épico nivel 4.</p>
-            <div class="news-date">06 · Abr · 2026</div>
-          </div>
-
-          <div class="news-card" style="animation-delay:0.1s">
-            <div class="news-tag event">Evento</div>
-            <h3>Festival de Primavera de Rune-Midgarts</h3>
-            <p>¡Consigue el set completo de Sakura recolectando pétalos en Prontera hasta el 20 de Abril!</p>
-            <div class="news-date">01 · Abr · 2026</div>
-          </div>
-
-          <div class="news-card" style="animation-delay:0.15s">
-            <div class="news-tag maint">Mantenimiento</div>
-            <h3>Ventana de mantenimiento programado</h3>
-            <p>El servidor estará fuera de línea el Miércoles 8 de Abril, de 2:00 AM a 6:00 AM (GMT-6) para mejoras de infraestructura.</p>
-            <div class="news-date">28 · Mar · 2026</div>
-          </div>
-
-          <div class="news-card" style="animation-delay:0.2s">
-            <div class="news-tag update">Actualización</div>
-            <h3>Balance de clases — Royal Guard y Warlock</h3>
-            <p>Se ajustan coeficientes de daño en PvP y se corrigen tres habilidades con comportamiento incorrecto en WoE.</p>
-            <div class="news-date">22 · Mar · 2026</div>
-          </div>
-        </div>
+        <div class="news-list" id="news-list"></div>
       </div>
     </div>
 
+    <!-- RIGHT -->
     <div class="panel-right">
       <div class="auth-area">
         <div class="auth-header">
           <div class="auth-crest">⚔</div>
           <h2>Iniciar Sesión</h2>
-          <p>Accede a tu cuenta de Midgard</p>
+          <p>Accede a tu cuenta de Vanaheim</p>
         </div>
 
         <div class="form-group">
@@ -996,12 +407,11 @@
             <input type="checkbox" id="remember">
             <span>Recordar sesión</span>
           </label>
-          <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+          <a href="https://vanaheim-ragnarok.online/FluxCP/?module=account&action=resetpass"
+             target="_blank" rel="noopener" class="forgot-link">¿Olvidaste tu contraseña?</a>
         </div>
 
-        <button class="btn btn-login" id="btn-login">
-          <span>⚔</span> Entrar al Mundo
-        </button>
+        <button class="btn btn-launch" id="btn-launch">▶ &nbsp;Iniciar Sesión y Jugar</button>
 
         <div class="auth-divider">
           <div class="auth-divider-line"></div>
@@ -1009,181 +419,282 @@
           <div class="auth-divider-line"></div>
         </div>
 
-        <button class="btn btn-register" id="btn-register">
+        <a class="btn btn-register"
+           href="https://vanaheim-ragnarok.online/FluxCP/?module=account&action=create"
+           target="_blank" rel="noopener">
           Crear nueva cuenta
-        </button>
+        </a>
       </div>
 
-      <div class="panel-right-body">
+      <div class="stats-area">
+        <div class="section-header">
+          <div class="section-title">Estado del Servidor</div>
+          <div class="section-line"></div>
+        </div>
         <div class="server-stats">
           <div class="stat-card">
             <div class="stat-label">Jugadores Online</div>
-            <div class="stat-value" id="players-online">—<span>sin telemetría</span></div>
+            <div class="stat-value" id="players-online">—<span>…</span></div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Uptime</div>
             <div class="stat-value">14<span>días</span></div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Tasa de Exp</div>
-            <div class="stat-value">5x<span>/ 5x / 3x</span></div>
+            <div class="stat-label">Tasa Exp / Job</div>
+            <div class="stat-value">5x<span>/ 5x</span></div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Parches</div>
-            <div class="stat-value" id="patch-count">—</div>
+            <div class="stat-label">Tasa Drop</div>
+            <div class="stat-value">3x<span>base</span></div>
           </div>
         </div>
       </div>
     </div>
-  </main>
+  </div>
 
-  <footer>
-    <div class="footer-left">© 2026 Midgard Private Server — rAthena Emulator</div>
-    <div class="footer-links">
-      <a href="#">Discord</a>
-      <a href="#">Wiki</a>
-      <a href="#">Soporte</a>
-      <a href="#">Foros</a>
+  <!-- PATCHER BAR -->
+  <div class="patcher-bar">
+    <div class="patcher-left">
+      <div class="patcher-meta">
+        <div class="patcher-label">Patcher</div>
+        <div class="patch-version-pill">client-2026.04.06</div>
+        <div class="progress-speed" id="progress-speed">— KB/s</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-track">
+          <div class="progress-fill active" id="progress-fill"></div>
+        </div>
+        <div class="progress-pct" id="progress-pct">0%</div>
+      </div>
+      <div class="patcher-log-line info" id="patch-log">Inicializando patcher...</div>
     </div>
-  </footer>
+  </div>
+
 </div>
 
-<div class="patcher-bar">
-  <div class="patcher-bar-inner">
-    <div class="patch-status">
-      <div class="patch-log" id="patch-log">
-        <div class="patch-log-line info">Esperando estado real del patcher...</div>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modal-close" aria-label="Cerrar">✕</button>
+    <div class="modal-header">
+      <div id="modal-tag"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-date"  id="modal-date"></div>
     </div>
-
-    <div class="progress-info">
-      <div class="progress-pct" id="progress-pct">0%</div>
-      <div class="progress-speed" id="progress-speed">— KB/s</div>
-    </div>
-
-    <div class="play-section">
-      <button class="btn btn-play" id="btn-play" disabled>
-        <span class="play-icon">▶</span>
-        Actualizando...
-      </button>
-    </div>
-
-    <div id="patch-ver" style="display:none;">—</div>
+    <div class="modal-body" id="modal-body"></div>
   </div>
 </div>
 
+<!-- TOAST -->
 <div class="toast" id="toast">
-  <span class="toast-icon" id="toast-icon">⚑</span>
+  <span id="toast-icon">⚑</span>
   <span id="toast-msg">—</span>
 </div>
 
 <script>
+/* ── News data ── */
+const NEWS = [
+  { tag:'update', tagLabel:'Actualización',
+    title:'Parche 2.4.1 — Nuevas instancias de Eclage',
+    excerpt:'Se añaden dos nuevas mazmorras de instancia en Eclage con drops exclusivos y equipo épico nivel 4.',
+    date:'06 · Abr · 2026',
+    body:`<p>El parche 2.4.1 introduce dos nuevas mazmorras de instancia ambientadas en el reino aéreo de Eclage. Diseñadas para grupos de 5 a 12 jugadores de nivel 185+.</p>
+<p class="modal-detail"><strong style="color:var(--gold-dim)">Nuevas instancias:</strong><br>
+— <em>Cielo Fracturado</em>: 3 pisos con boss final Ariel el Ángel Corrompido. Drop único: Alas de Eclage [1].<br>
+— <em>Cripta de la Raíz</em>: Mazmorra lineal con límite de 45 min. Drop único: Raíz del Yggdrasil Antiguo.</p>
+<p>Ambas tienen cooldown de 23 h por personaje. Entradas en Eclage (ecl_in01 168, 42).</p>`
+  },
+  { tag:'event', tagLabel:'Evento',
+    title:'Festival de Primavera de Rune-Midgarts',
+    excerpt:'¡Consigue el set completo de Sakura recolectando pétalos en Prontera hasta el 20 de Abril!',
+    date:'01 · Abr · 2026',
+    body:`<p>Durante todo Abril los campos de Prontera se llenan de cerezos. Recolecta <em>Pétalos de Sakura</em> derrotando monstruos de nivel 50-120 en mapas abiertos.</p>
+<p class="modal-detail"><strong style="color:var(--gold-dim)">Recompensas:</strong><br>
+— 50 pétalos: Diadema de Sakura (cosmético, STR +1)<br>
+— 150 pétalos: Kimono de Primavera (set completo)<br>
+— 300 pétalos: Mascota exclusiva Conejo de Flor de Cerezo<br>
+— 500 pétalos: Montura Dragón Rosa (30 días)</p>
+<p>El NPC <em>Hanami</em> estará en Prontera (prt_fild01 150, 180) hasta el 20 de Abril a las 23:59 GMT-6.</p>`
+  },
+  { tag:'maint', tagLabel:'Mantenimiento',
+    title:'Ventana de mantenimiento programado',
+    excerpt:'El servidor estará fuera de línea el Miércoles 8 de Abril, de 2:00 AM a 6:00 AM (GMT-6).',
+    date:'28 · Mar · 2026',
+    body:`<p>El Miércoles 8 de Abril realizaremos un mantenimiento de 4 horas. El servidor estará completamente fuera de línea en ese período.</p>
+<p class="modal-detail"><strong style="color:var(--gold-dim)">Cambios incluidos:</strong><br>
+— Migración del servidor de mapas a hardware nuevo (−15 ms de latencia estimada)<br>
+— Actualización del emulador rAthena a build 2026.03.28<br>
+— Corrección de memoria en el módulo de instancias<br>
+— Rebalanceo de spawns en mapas de leveo 100-150</p>
+<p>Como compensación, todos los personajes recibirán una <em>Caja de Compensación</em> al conectarse tras el mantenimiento.</p>`
+  },
+  { tag:'update', tagLabel:'Actualización',
+    title:'Balance de clases — Royal Guard y Warlock',
+    excerpt:'Se ajustan coeficientes de daño en PvP y se corrigen tres habilidades con comportamiento incorrecto en WoE.',
+    date:'22 · Mar · 2026',
+    body:`<p>Tras análisis de datos de combate en WoE y BG de las últimas 6 semanas, aplicamos los siguientes ajustes:</p>
+<p class="modal-detail"><strong style="color:var(--gold-dim)">Royal Guard:</strong><br>
+— Overbrand: reducción de daño en PvP del 12% (sin cambios en PvE)<br>
+— Earth Drive: corrección del bug que ignoraba reducción de elemento Tierra<br>
+— Prestige: ahora aplica correctamente la reducción a habilidades de Ranger</p>
+<p class="modal-detail"><strong style="color:var(--gold-dim)">Warlock:</strong><br>
+— Tetra Vortex: corregido el cálculo de MATK con equipo de mano izquierda<br>
+— Reading Spellbook: el cooldown se reinicia correctamente al morir<br>
+— Jack Frost: normalizado el hitbox en celdas de esquina</p>`
+  },
+  { tag:'event', tagLabel:'Evento',
+    title:'MVP Ranking — Temporada 3',
+    excerpt:'El top 10 de cazadores de MVP al final de mes recibirá recompensas exclusivas de temporada.',
+    date:'15 · Mar · 2026',
+    body:`<p>La Temporada 3 del MVP Ranking ya está en curso. Cada MVP eliminado suma puntos según su dificultad. Consulta el ranking con el comando <code style="font-family:'JetBrains Mono';font-size:12px;color:var(--gold)">/mvprank</code>.</p>
+<p class="modal-detail"><strong style="color:var(--gold-dim)">Premios (fin de Abril):</strong><br>
+— 1° lugar: Arma MVP exclusiva + título "Asesino de Dioses"<br>
+— 2°-3° lugar: 500 Vanaheim Coins + cosmético de temporada<br>
+— 4°-10° lugar: 200 Vanaheim Coins + título "Cazador de Élite"</p>
+<p>Los puntos se acumulan solo en mapas abiertos. Los MVPs en instancias privadas no cuentan.</p>`
+  },
+  { tag:'maint', tagLabel:'Mantenimiento',
+    title:'Migración de base de datos completada',
+    excerpt:'La migración a PostgreSQL 17 fue exitosa. Se espera una mejora del 30% en latencia de transacciones.',
+    date:'10 · Mar · 2026',
+    body:`<p>Completamos exitosamente la migración de MariaDB 10.6 a PostgreSQL 17. El proceso duró 3 horas con cero pérdida de datos.</p>
+<p class="modal-detail"><strong style="color:var(--gold-dim)">Mejoras medidas post-migración:</strong><br>
+— Latencia de escritura de inventario: −31%<br>
+— Tiempo de consulta de mercado (Vending): −44%<br>
+— Carga de personaje al conectarse: −18%<br>
+— Conexiones simultáneas soportadas: +60%</p>
+<p>Si encuentras algún problema con tu cuenta o gremio, abre un ticket en Discord en el canal <em>#soporte-tecnico</em>.</p>`
+  }
+];
+
+/* ── Render cards ── */
+const newsList = document.getElementById('news-list');
+NEWS.forEach((n, i) => {
+  const card = document.createElement('div');
+  card.className = 'news-card';
+  card.style.animationDelay = (i * 0.055) + 's';
+  card.innerHTML = `<div class="news-tag ${n.tag}">${n.tagLabel}</div>
+<h3>${n.title}</h3><p>${n.excerpt}</p>
+<div class="news-date">${n.date}</div>
+<div class="news-read-more">Leer más ›</div>`;
+  card.addEventListener('click', () => openModal(n));
+  newsList.appendChild(card);
+});
+
+/* ── Modal ── */
+const backdrop = document.getElementById('modal-backdrop');
+
+function openModal(n) {
+  document.getElementById('modal-tag').innerHTML = `<span class="news-tag ${n.tag}">${n.tagLabel}</span>`;
+  document.getElementById('modal-title').textContent = n.title;
+  document.getElementById('modal-date').textContent  = n.date;
+  document.getElementById('modal-body').innerHTML    = n.body;
+  document.getElementById('modal-body').scrollTop   = 0;
+  backdrop.classList.add('open');
+}
+function closeModal() { backdrop.classList.remove('open'); }
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ── Clock GMT-6 ── */
 function updateClock() {
-  const now = new Date();
-  const gmt6 = new Date(now.getTime() - (now.getTimezoneOffset() + 360) * 60000);
-  const hh = String(gmt6.getUTCHours()).padStart(2, '0');
-  const mm = String(gmt6.getUTCMinutes()).padStart(2, '0');
-  const ss = String(gmt6.getUTCSeconds()).padStart(2, '0');
+  const gmt6 = new Date(Date.now() - 6 * 3600000);
+  const hh = String(gmt6.getUTCHours()).padStart(2,'0');
+  const mm = String(gmt6.getUTCMinutes()).padStart(2,'0');
+  const ss = String(gmt6.getUTCSeconds()).padStart(2,'0');
   document.getElementById('clock-time').textContent = `${hh}:${mm}:${ss}`;
 }
+updateClock(); setInterval(updateClock, 1000);
 
-updateClock();
-setInterval(updateClock, 1000);
-
+/* ── Particles ── */
 const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
-let W = 0;
-let H = 0;
-let particles = [];
+let W, H, pts = [];
+function resize(){ W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+function mkP(){ return { x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.28, vy:-Math.random()*.35-.08, r:Math.random()*1.3+.3, life:0, max:200+Math.random()*260, c:Math.random()<.6?'200,168,75':'80,120,200' }; }
+for(let i=0;i<70;i++){ const p=mkP(); p.life=Math.random()*p.max; pts.push(p); }
+(function anim(){ ctx.clearRect(0,0,W,H); pts.forEach((p,i)=>{ p.life++; if(p.life>p.max){pts[i]=mkP();return;} const a=Math.sin(p.life/p.max*Math.PI)*.45; ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(${p.c},${a})`;ctx.fill(); p.x+=p.vx;p.y+=p.vy; }); requestAnimationFrame(anim); })();
 
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
-
-resize();
-window.addEventListener('resize', resize);
-
-function mkParticle() {
-  return {
-    x: Math.random() * W,
-    y: Math.random() * H,
-    vx: (Math.random() - 0.5) * 0.3,
-    vy: -Math.random() * 0.4 - 0.1,
-    r: Math.random() * 1.4 + 0.3,
-    life: 0,
-    maxLife: 180 + Math.random() * 240,
-    color: Math.random() < 0.6 ? '200,168,75' : '80,120,200'
-  };
-}
-
-for (let i = 0; i < 80; i += 1) {
-  const p = mkParticle();
-  p.life = Math.random() * p.maxLife;
-  particles.push(p);
-}
-
-function animateParticles() {
-  ctx.clearRect(0, 0, W, H);
-  particles.forEach((p, i) => {
-    p.life += 1;
-    if (p.life > p.maxLife) {
-      particles[i] = mkParticle();
-      return;
-    }
-    const t = p.life / p.maxLife;
-    const a = Math.sin(t * Math.PI) * 0.5;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(${p.color},${a})`;
-    ctx.fill();
-    p.x += p.vx;
-    p.y += p.vy;
-  });
-  requestAnimationFrame(animateParticles);
-}
-
-animateParticles();
-
-function showToast(msg, icon = '⚑') {
-  const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  document.getElementById('toast-icon').textContent = icon;
+/* ── Toast ── */
+function showToast(msg, icon='⚑'){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('toast-icon').textContent=icon;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3800);
+  setTimeout(()=>t.classList.remove('show'),3600);
 }
 
-let currentPct = 0;
-const patchLog = document.getElementById('patch-log');
-const progressFill = document.getElementById('progress-fill');
-const progressPct = document.getElementById('progress-pct');
-const progressSpeed = document.getElementById('progress-speed');
-const btnPlay = document.getElementById('btn-play');
-const patchCount = document.getElementById('patch-count');
-const patchVer = document.getElementById('patch-ver');
-
+/* ── Patcher real (backend rpatchur) ── */
+let cp = 0;
 let patchingActive = false;
 let patchReady = false;
 let updateRequested = false;
+let backendSignalReceived = false;
+let startupRetryTimer = null;
+let startupRetryCount = 0;
+
+const logEl = document.getElementById('patch-log');
+const fillEl = document.getElementById('progress-fill');
+const pctEl = document.getElementById('progress-pct');
+const speedEl = document.getElementById('progress-speed');
+const patchVersionPill = document.querySelector('.patch-version-pill');
+
+function setPatchLog(type, msg) {
+  logEl.className = `patcher-log-line ${type}`;
+  logEl.textContent = msg;
+}
+
+function animPct(target) {
+  const start = cp;
+  const duration = 550;
+  const t0 = performance.now();
+  function step(now) {
+    const p = Math.min((now - t0) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    cp = Math.round(start + (target - start) * ease);
+    fillEl.style.width = `${cp}%`;
+    pctEl.textContent = `${cp}%`;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 
 function hasExternalBridge() {
-  return Boolean(window.external && typeof window.external.invoke === 'function');
+  return !!(window.external && typeof window.external.invoke === 'function');
 }
 
 function externalInvoke(payload) {
-  if (!hasExternalBridge()) return;
-  window.external.invoke(payload);
+  if (!hasExternalBridge()) return false;
+  const request = typeof payload === 'string' ? payload : JSON.stringify(payload);
+
+  try {
+    const result = window.external.invoke(request);
+    if (result && typeof result.then === 'function') {
+      result.catch((err) => {
+        updateRequested = false;
+        patchingActive = false;
+        setPatchLog('warn', `Bridge error: ${String(err)}`);
+        speedEl.textContent = 'bridge error';
+      });
+    }
+    return true;
+  } catch (err) {
+    setPatchLog('warn', `Bridge error: ${String(err)}`);
+    speedEl.textContent = 'bridge error';
+  }
+  return false;
 }
 
 function invokeSimple(cmd) {
-  externalInvoke(cmd);
+  return externalInvoke(cmd);
 }
 
 function invokeJson(functionName, parameters) {
-  externalInvoke(JSON.stringify({ function: functionName, parameters }));
+  return externalInvoke(JSON.stringify({ function: functionName, parameters }));
 }
 
 function humanFileSize(size) {
@@ -1194,170 +705,147 @@ function humanFileSize(size) {
   return `${n.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
 }
 
-function setPatchLog(type, msg) {
-  patchLog.innerHTML = '';
-  const line = document.createElement('div');
-  line.className = `patch-log-line ${type}`;
-  line.textContent = msg;
-  patchLog.appendChild(line);
-}
-
-function setPatchCount(label, suffix) {
-  patchCount.innerHTML = `${label}<span>${suffix}</span>`;
-}
-
-function setPlayButtonMode(mode) {
-  if (mode === 'ready') {
-    btnPlay.disabled = false;
-    btnPlay.innerHTML = '<span class="play-icon">▶</span> ¡Jugar Ahora!';
-    return;
-  }
-
-  if (mode === 'cancel') {
-    btnPlay.disabled = false;
-    btnPlay.innerHTML = '<span class="play-icon">■</span> Cancelar Update';
-    return;
-  }
-
-  if (mode === 'web') {
-    btnPlay.disabled = true;
-    btnPlay.innerHTML = '<span class="play-icon">🌐</span> Solo Vista Web';
-    return;
-  }
-
-  btnPlay.disabled = false;
-  btnPlay.innerHTML = '<span class="play-icon">↻</span> Iniciar Update';
-}
-
-function animatePct(target) {
-  const start = currentPct;
-  const dur = 500;
-  const t0 = performance.now();
-
-  function step(now) {
-    const p = Math.min((now - t0) / dur, 1);
-    const ease = 1 - Math.pow(1 - p, 3);
-    currentPct = Math.round(start + (target - start) * ease);
-    progressFill.style.width = `${currentPct}%`;
-    progressPct.textContent = `${currentPct}%`;
-    if (p < 1) requestAnimationFrame(step);
-  }
-
-  requestAnimationFrame(step);
-}
-
-function parsePatchList(raw) {
-  return raw
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith('//'));
-}
-
-function runParsePatchListSelfTest() {
-  const cases = [
-    {
-      input: 'a.txt\nb.txt',
-      expected: ['a.txt', 'b.txt']
-    },
-    {
-      input: 'a.txt\r\nb.txt\r\n// comment\r\n\r\n c.txt ',
-      expected: ['a.txt', 'b.txt', 'c.txt']
-    }
-  ];
-
-  return cases.every(({ input, expected }) => {
-    const actual = parsePatchList(input);
-    return JSON.stringify(actual) === JSON.stringify(expected);
-  });
-}
-
-const patchListParserOk = runParsePatchListSelfTest();
-
-async function loadPatchListSummary() {
-  try {
-    if (!patchListParserOk) {
-      throw new Error('Patch list parser self-test failed');
-    }
-
-    const response = await fetch('./plist.txt', { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const raw = await response.text();
-    const lines = parsePatchList(raw);
-
-    setPatchCount(String(lines.length), 'pendientes');
-    setPatchLog('info', `Lista real cargada: ${lines.length} parche(s) en plist.txt`);
-    progressSpeed.textContent = 'lista verificada';
-  } catch (err) {
-    setPatchCount('—', 'sin datos');
-    setPatchLog('warn', 'No se pudo leer plist.txt en modo web.');
-    progressSpeed.textContent = 'sin conexión';
-    console.error('loadPatchListSummary error:', err);
-  }
-}
-
 function requestStartUpdate(showFeedback) {
-  if (!hasExternalBridge() || patchReady || patchingActive || updateRequested) {
+  if (!hasExternalBridge() || patchReady || patchingActive || updateRequested) return;
+  updateRequested = true;
+  patchingActive = true;
+  patchReady = false;
+  fillEl.classList.add('active');
+  setPatchLog('info', 'Conectando con servidor de parches...');
+  speedEl.textContent = 'iniciando';
+  const sent = invokeSimple('start_update');
+  if (!sent) {
+    updateRequested = false;
+    patchingActive = false;
+    setPatchLog('warn', 'Bridge no disponible todavía. Reintentando...');
+    speedEl.textContent = 'esperando bridge';
     return;
   }
-
-  patchingActive = true;
-  updateRequested = true;
-  patchReady = false;
-  setPlayButtonMode('cancel');
-  setPatchLog('info', 'Conectando con servidor de parches...');
-  progressSpeed.textContent = 'iniciando';
-  invokeSimple('start_update');
-
-  if (showFeedback) {
-    showToast('Iniciando actualización...', '↻');
-  }
+  if (showFeedback) showToast('Iniciando actualización...', '↻');
 }
 
-document.getElementById('btn-login').addEventListener('click', () => {
+function scheduleStartupRetry() {
+  if (startupRetryTimer) clearInterval(startupRetryTimer);
+  startupRetryCount = 0;
+  startupRetryTimer = setInterval(() => {
+    if (backendSignalReceived || patchReady) {
+      clearInterval(startupRetryTimer);
+      startupRetryTimer = null;
+      return;
+    }
+    if (!hasExternalBridge()) {
+      return;
+    }
+    startupRetryCount += 1;
+    if (startupRetryCount > 20) {
+      clearInterval(startupRetryTimer);
+      startupRetryTimer = null;
+      setPatchLog('warn', 'No hubo respuesta del backend. Verifica logs/conectividad.');
+      speedEl.textContent = 'sin respuesta';
+      return;
+    }
+    patchingActive = false;
+    updateRequested = false;
+    setPatchLog('info', `Conectando con servidor de parches... (reintento ${startupRetryCount})`);
+    requestStartUpdate(false);
+  }, 1500);
+}
+
+function patchingStatusReady() {
+  backendSignalReceived = true;
+  patchReady = true;
+  patchingActive = false;
+  updateRequested = false;
+  animPct(100);
+  setPatchLog('ok', 'Cliente actualizado — listo para jugar.');
+  speedEl.textContent = '—';
+  fillEl.classList.remove('active');
+  showToast('Cliente listo. ¡Que comience la aventura!', '✦');
+}
+
+function patchingStatusError(errorMsg) {
+  backendSignalReceived = true;
+  patchReady = false;
+  patchingActive = false;
+  updateRequested = false;
+  setPatchLog('warn', `Error: ${errorMsg}`);
+  speedEl.textContent = 'error';
+  fillEl.classList.remove('active');
+  showToast('Falló la actualización. Revisa el log.', '⚠');
+}
+
+function patchingStatusDownloading(nbDownloaded, nbTotal, bytesDownloaded, bytesTotal, bytesPerSec) {
+  backendSignalReceived = true;
+  patchReady = false;
+  patchingActive = true;
+  const pct = bytesTotal > 0
+    ? (100 * bytesDownloaded) / bytesTotal
+    : (nbTotal > 0 ? (100 * nbDownloaded) / nbTotal : 0);
+  animPct(pct);
+  setPatchLog('warn', `Descargando parche ${nbDownloaded}/${nbTotal}...`);
+  const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
+  const totals = bytesTotal > 0
+    ? `${humanFileSize(bytesDownloaded)} / ${humanFileSize(bytesTotal)}`
+    : `${humanFileSize(bytesDownloaded)} descargados`;
+  speedEl.textContent = `${speed} · ${totals}`;
+  if (patchVersionPill) patchVersionPill.textContent = `patch ${nbDownloaded}/${nbTotal}`;
+}
+
+function patchingStatusInstalling(nbInstalled, nbTotal) {
+  backendSignalReceived = true;
+  patchReady = false;
+  patchingActive = true;
+  const pct = nbTotal > 0 ? (100 * nbInstalled) / nbTotal : 0;
+  animPct(pct);
+  setPatchLog('info', `Instalando parche ${nbInstalled}/${nbTotal}...`);
+  speedEl.textContent = 'instalando';
+}
+
+function patchingStatusDownloadAndInstall(nbDownloaded, nbInstalled, nbTotal, bytesPerSec) {
+  backendSignalReceived = true;
+  patchReady = false;
+  patchingActive = true;
+  const pct = nbTotal > 0 ? (100 * (nbDownloaded + nbInstalled)) / (2 * nbTotal) : 0;
+  animPct(pct);
+  setPatchLog('warn', `Descargando ${nbDownloaded}/${nbTotal} | Instalando ${nbInstalled}/${nbTotal}`);
+  const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
+  speedEl.textContent = `${speed} · descarga+instalación concurrente`;
+  if (patchVersionPill) patchVersionPill.textContent = `conc. ${nbDownloaded}/${nbInstalled}/${nbTotal}`;
+}
+
+function patchingStatusPatchApplied(fileName) {
+  backendSignalReceived = true;
+  setPatchLog('ok', `Patch manual aplicado: ${fileName}`);
+  showToast(`Patch manual aplicado: ${fileName}`, '✦');
+}
+
+function notificationInProgress() {
+  backendSignalReceived = true;
+  setPatchLog('info', 'Ya hay una actualización en progreso.');
+  showToast('Ya hay un update en progreso.', '⚠');
+}
+
+/* Sin telemetría real del servidor desde patcher */
+document.getElementById('players-online').innerHTML = '—<span>sin telemetría</span>';
+
+/* ── Launch real ── */
+document.getElementById('btn-launch').addEventListener('click', () => {
   const u = document.getElementById('username').value.trim();
   const p = document.getElementById('password').value;
-
   if (!u || !p) {
     showToast('Ingresa tu usuario y contraseña.', '⚠');
     return;
   }
-
-  if (hasExternalBridge()) {
-    invokeJson('login', { login: u, password: p });
-    showToast(`Autenticando a ${u}...`, '✦');
-    return;
-  }
-
-  showToast('Login disponible solo en el cliente patcher.', '⚑');
-});
-
-document.getElementById('btn-register').addEventListener('click', () => {
-  showToast('Abriendo portal de registro...', '◈');
-  window.open('https://example.com/register', '_blank', 'noopener,noreferrer');
-});
-
-document.getElementById('btn-play').addEventListener('click', () => {
   if (!hasExternalBridge()) {
-    showToast('Esta vista web no puede iniciar el cliente.', '⚑');
+    showToast('Esta vista no tiene bridge del patcher.', '⚑');
     return;
   }
+
+  invokeJson('login', { login: u, password: p });
 
   if (patchReady) {
     invokeSimple('play');
-    showToast('Iniciando cliente de Ragnarok...', '▶');
-    return;
-  }
-
-  if (patchingActive) {
-    invokeSimple('cancel_update');
-    patchingActive = false;
-    updateRequested = false;
-    setPlayButtonMode('start');
-    setPatchLog('warn', 'Cancelación solicitada por el usuario...');
-    showToast('Cancelando actualización...', '⚐');
+    showToast(`Lanzando cliente, bienvenido ${u}!`, '▶');
     return;
   }
 
@@ -1366,130 +854,35 @@ document.getElementById('btn-play').addEventListener('click', () => {
 
 ['username', 'password'].forEach((id) => {
   document.getElementById(id).addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      document.getElementById('btn-login').click();
-    }
+    if (e.key === 'Enter') document.getElementById('btn-launch').click();
   });
 });
 
-function patchingStatusReady() {
-  patchReady = true;
-  patchingActive = false;
-  updateRequested = false;
-  animatePct(100);
-  progressSpeed.textContent = '—';
-  setPatchLog('ok', 'Cliente actualizado. ¡Bienvenido!');
-  setPatchCount('0', 'pendientes');
-  setPlayButtonMode('ready');
-  showToast('Cliente listo. ¡Que comience la aventura!', '✦');
-}
-
-function patchingStatusError(errorMsg) {
-  patchingActive = false;
-  updateRequested = false;
-  patchReady = false;
-  setPatchLog('warn', `Error: ${errorMsg}`);
-  progressSpeed.textContent = 'error';
-  setPlayButtonMode('start');
-  showToast('Falló la actualización. Revisa el log.', '⚠');
-}
-
-function patchingStatusDownloading(nbDownloaded, nbTotal, bytesDownloaded, bytesTotal, bytesPerSec) {
-  patchingActive = true;
-  patchReady = false;
-  setPlayButtonMode('cancel');
-
-  const pct = bytesTotal > 0
-    ? (100 * bytesDownloaded) / bytesTotal
-    : (nbTotal > 0 ? (100 * nbDownloaded) / nbTotal : 0);
-
-  animatePct(pct);
-  setPatchLog('warn', `Descargando parche ${nbDownloaded}/${nbTotal}...`);
-
-  const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
-  const totals = bytesTotal > 0
-    ? `${humanFileSize(bytesDownloaded)} / ${humanFileSize(bytesTotal)}`
-    : `${humanFileSize(bytesDownloaded)} descargados`;
-
-  progressSpeed.textContent = `${speed} · ${totals}`;
-  setPatchCount(humanFileSize(bytesDownloaded), 'totales');
-  patchVer.textContent = `patch ${nbDownloaded}/${nbTotal}`;
-}
-
-function patchingStatusInstalling(nbInstalled, nbTotal) {
-  patchingActive = true;
-  patchReady = false;
-  setPlayButtonMode('cancel');
-
-  const pct = nbTotal > 0 ? (100 * nbInstalled) / nbTotal : 0;
-  animatePct(pct);
-  setPatchLog('info', `Instalando parche ${nbInstalled}/${nbTotal}...`);
-  progressSpeed.textContent = 'instalando';
-
-  const pending = Math.max(nbTotal - nbInstalled, 0);
-  setPatchCount(`${pending}`, 'pendientes');
-}
-
-function patchingStatusDownloadAndInstall(nbDownloaded, nbInstalled, nbTotal, bytesPerSec) {
-  patchingActive = true;
-  patchReady = false;
-  setPlayButtonMode('cancel');
-
-  const pct = nbTotal > 0 ? (100 * (nbDownloaded + nbInstalled)) / (2 * nbTotal) : 0;
-  animatePct(pct);
-  setPatchLog('warn', `Descargando ${nbDownloaded}/${nbTotal} | Instalando ${nbInstalled}/${nbTotal}`);
-
-  const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
-  progressSpeed.textContent = `${speed} · descarga+instalación concurrente`;
-
-  const pending = Math.max(nbTotal - Math.max(nbDownloaded, nbInstalled), 0);
-  setPatchCount(`${pending}`, 'pendientes');
-  patchVer.textContent = `conc. ${nbDownloaded}/${nbInstalled}/${nbTotal}`;
-}
-
-function patchingStatusPatchApplied(fileName) {
-  setPatchLog('ok', `Patch manual aplicado: ${fileName}`);
-  showToast(`Patch manual aplicado: ${fileName}`, '✦');
-}
-
-function notificationInProgress() {
-  setPatchLog('info', 'Ya hay una actualización en progreso.');
-  showToast('Ya hay un update en progreso.', '⚠');
-}
-
 function initPatcherStartup() {
-  setPatchCount('—', 'pendientes');
-  document.getElementById('players-online').innerHTML = '—<span>sin telemetría</span>';
+  if (patchVersionPill) patchVersionPill.textContent = '—';
+  setPatchLog('info', 'Esperando estado real del patcher...');
+  speedEl.textContent = '—';
 
   if (hasExternalBridge()) {
-    setPlayButtonMode('start');
-    setPatchLog('info', 'Conectado al cliente patcher. Preparando actualización...');
-    progressSpeed.textContent = 'esperando bridge';
-    setTimeout(() => requestStartUpdate(false), 150);
+    requestStartUpdate(false);
+    scheduleStartupRetry();
     return;
   }
 
   let attempts = 0;
-  const maxAttempts = 40;
-
   const probe = setInterval(() => {
     attempts += 1;
-
     if (hasExternalBridge()) {
       clearInterval(probe);
-      setPlayButtonMode('start');
-      setPatchLog('info', 'Bridge detectado. Iniciando actualización...');
-      progressSpeed.textContent = 'bridge detectado';
       requestStartUpdate(false);
+      scheduleStartupRetry();
       return;
     }
-
-    if (attempts >= maxAttempts) {
+    if (attempts >= 40) {
       clearInterval(probe);
-      setPlayButtonMode('web');
-      setPatchLog('info', 'Modo web: leyendo estado real desde plist.txt');
-      progressSpeed.textContent = 'modo web';
-      loadPatchListSummary();
+      fillEl.classList.remove('active');
+      setPatchLog('warn', 'Vista web sin bridge real del patcher.');
+      speedEl.textContent = 'modo web';
     }
   }, 250);
 }
