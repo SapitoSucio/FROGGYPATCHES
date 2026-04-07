@@ -548,13 +548,6 @@ function bindExternalLinks() {
       openExternalUrl(url);
     };
 
-    link.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0) return;
-      event.preventDefault();
-      event.stopPropagation();
-      open();
-    });
-
     link.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
