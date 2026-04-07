@@ -137,9 +137,12 @@ const i18n = {
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
       el.placeholder = this.t(el.dataset.i18nPlaceholder);
     });
-    // Update active lang pill
+    // Update active lang pill (ES/EN only)
     document.querySelectorAll('.lang-pill').forEach(pill => {
-      pill.classList.toggle('active', pill.dataset.lang === this.lang);
+      const code = pill.dataset.lang;
+      if (code === 'es' || code === 'en') {
+        pill.classList.toggle('active', code === this.lang);
+      }
     });
     // Re-render dynamic content
     renderNews();
@@ -177,13 +180,23 @@ const themeManager = {
     if (input) input.checked = mode === 'light';
     const thumb = document.getElementById('theme-toggle-thumb');
     if (thumb) thumb.textContent = mode === 'light' ? '☀' : '☽';
+    document.querySelectorAll('.lang-pill[data-lang^="__"]').forEach(pill => {
+      const mapped = pill.dataset.lang === '__light__' ? 'light' : 'dark';
+      pill.classList.toggle('active', mapped === mode);
+    });
+    setParticlePaletteForTheme(mode);
+  },
+
+  set(mode, persist = true) {
+    if (mode !== 'light' && mode !== 'dark') return;
+    if (persist) localStorage.setItem(this.KEY, mode);
+    this.apply(mode);
   },
 
   toggle() {
     const current = document.documentElement.getAttribute('data-theme') || 'dark';
     const next = current === 'dark' ? 'light' : 'dark';
-    localStorage.setItem(this.KEY, next);
-    this.apply(next);
+    this.set(next, true);
   },
 
   init() {
@@ -442,6 +455,7 @@ function openModal(newsItem, cardEl = null) {
     setModalContent(newsItem);
     dom.backdrop.classList.add('open');
     _modalIsOpen = true;
+    updateParticleRuntime();
     return;
   }
 
@@ -460,6 +474,7 @@ function openModal(newsItem, cardEl = null) {
     setModalContent(newsItem);
     dom.backdrop.classList.add('open');
     _modalIsOpen = true;
+    updateParticleRuntime();
   });
 
   vt.finished
@@ -478,6 +493,7 @@ function closeModal() {
     dom.backdrop.classList.remove('open');
     _modalIsOpen = false;
     _modalSourceCardEl = null;
+    updateParticleRuntime();
     return;
   }
 
@@ -494,6 +510,7 @@ function closeModal() {
     sourceCard.style.viewTransitionName = _activeCardTransitionName;
     dom.backdrop.classList.remove('open');
     _modalIsOpen = false;
+    updateParticleRuntime();
   });
 
   vt.finished
@@ -586,49 +603,125 @@ function updateClock() {
   dom.clockTime.textContent = `${hh}:${mm}:${ss}`;
 }
 
-/* ================================================================
-   PARTICLES
-   ================================================================ */
-const canvas = $('particles');
-const ctx = canvas.getContext('2d');
-let W = 0, H = 0, particles = [];
 
-function resizeCanvas() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+const PARTICLE_COUNT = 1200;
+const canvas = document.getElementById('particles');
+const ctx = canvas ? canvas.getContext('2d') : null;
+let W = 0, H = 0;
+const particles = new Array(PARTICLE_COUNT); // Array fijo, no recrear
+const PARTICLE_PALETTES = {
+  dark: ['210,179,106', '90,138,110'],
+  light: ['128,95,28', '17,70,30']
+};
+let _particlePalette = PARTICLE_PALETTES.dark;
+let _particleAlphaBoost = 1;
+let _particlesInitialized = false;
+let _particlesRunning = false;
+let _particlesRafId = 0;
+let _pageVisible = document.visibilityState === 'visible';
+let _windowFocused = document.hasFocus();
+let _particlesPolicyAllowed = true;
+let _particlesOpacity = 1;
+let _particlesTargetOpacity = 1;
 
-function createParticle() {
-  return {
-    x: Math.random() * W, y: Math.random() * H,
-    vx: (Math.random() - 0.5) * 0.28, vy: -Math.random() * 0.35 - 0.08,
-    r: Math.random() * 1.3 + 0.3,
-    life: 0, max: 200 + Math.random() * 260,
-    c: Math.random() < 0.6 ? '200,168,75' : '80,120,200'
-  };
+function setParticlePaletteForTheme(mode) {
+  _particlePalette = mode === 'light' ? PARTICLE_PALETTES.light : PARTICLE_PALETTES.dark;
+  _particleAlphaBoost = mode === 'light' ? 1.45 : 1;
+}
+
+function resizeCanvas() { 
+  if (!canvas) return;
+  W = canvas.width = innerWidth; 
+  H = canvas.height = innerHeight; 
+}
+
+function resetParticle(p, initialLife = 0) {
+  p.x = Math.random() * W;
+  p.y = Math.random() * H;
+  p.vx = (Math.random() - 0.5) * 0.28;
+  p.vy = -Math.random() * 0.35 - 0.08;
+  p.r = Math.random() * 1.3 + 0.3;
+  p.life = initialLife;
+  p.max = 200 + Math.random() * 260;
+  p.active = true;
+  p.c = Math.random() < 0.58 ? _particlePalette[0] : _particlePalette[1];
 }
 
 function initParticles() {
-  particles = [];
-  for (let i = 0; i < 70; i++) {
-    const p = createParticle();
-    p.life = Math.random() * p.max;
-    particles.push(p);
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    particles[i] = {};
+    resetParticle(particles[i], Math.random() * 460);
   }
+  _particlesInitialized = true;
+}
+
+function startParticles() {
+  if (!canvas || !ctx) return;
+  if (!_particlesInitialized) initParticles();
+  if (_particlesRunning) return;
+  _particlesRunning = true;
+  _particlesRafId = requestAnimationFrame(animateParticles);
+}
+
+function updateParticleRuntime() {
+  _particlesPolicyAllowed = !_modalIsOpen && _pageVisible && _windowFocused;
+  _particlesTargetOpacity = _particlesPolicyAllowed ? 1 : 0;
+  startParticles();
 }
 
 function animateParticles() {
+  if (!_particlesRunning || !ctx) return;
+
   ctx.clearRect(0, 0, W, H);
-  particles.forEach((p, i) => {
-    p.life += 1;
-    if (p.life > p.max) { particles[i] = createParticle(); return; }
-    const alpha = Math.sin((p.life / p.max) * Math.PI) * 0.45;
+
+  // Fade in/out smoothly instead of abrupt hide/show.
+  _particlesOpacity += (_particlesTargetOpacity - _particlesOpacity) * 0.075;
+
+  // Cachear propiedades de ctx fuera del loop
+  const PI2 = Math.PI * 2;
+  let respawnBudget = _particlesPolicyAllowed ? 16 : 0;
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const p = particles[i];
+
+    if (!p.active) {
+      if (respawnBudget > 0) {
+        resetParticle(p, Math.random() * 35);
+        respawnBudget--;
+      }
+      continue;
+    }
+
+    p.life++;
+
+    if (p.life > p.max) {
+      if (_particlesPolicyAllowed) {
+        resetParticle(p); // Reutilizar objeto, no crear nuevo
+      } else {
+        p.active = false; // No generar nuevas hasta recuperar foco/visibilidad
+      }
+      continue;
+    }
+
+    const alpha = Math.min(0.9, Math.sin((p.life / p.max) * Math.PI) * 0.45 * _particleAlphaBoost * _particlesOpacity);
+    if (alpha < 0.003) {
+      p.x += p.vx;
+      p.y += p.vy;
+      continue;
+    }
+
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, p.r, 0, PI2);
     ctx.fillStyle = `rgba(${p.c},${alpha})`;
     ctx.fill();
+
     p.x += p.vx;
     p.y += p.vy;
-  });
-  requestAnimationFrame(animateParticles);
+  }
+
+  _particlesRafId = requestAnimationFrame(animateParticles);
 }
+
 
 /* ================================================================
    TOAST
@@ -976,11 +1069,16 @@ document.addEventListener('click', e => {
 });
 
 // Theme toggle
-dom.themeToggleInput.addEventListener('change', () => themeManager.toggle());
+dom.themeToggleInput.addEventListener('change', () => {
+  themeManager.set(dom.themeToggleInput.checked ? 'light' : 'dark', true);
+});
 
 // Lang pills (inside options panel)
 document.querySelectorAll('.lang-pill').forEach(pill => {
-  pill.addEventListener('click', () => i18n.setLang(pill.dataset.lang));
+  pill.addEventListener('click', () => {
+    const code = pill.dataset.lang;
+    if (code === 'es' || code === 'en') i18n.setLang(code);
+  });
 });
 
 // Account switcher clear
@@ -1015,8 +1113,20 @@ updateClock();
 setInterval(updateClock, 1000);
 
 resizeCanvas();
-addEventListener('resize', resizeCanvas);
 initParticles();
-animateParticles();
+updateParticleRuntime();
+window.addEventListener('resize', resizeCanvas);
+document.addEventListener('visibilitychange', () => {
+  _pageVisible = document.visibilityState === 'visible';
+  updateParticleRuntime();
+});
+window.addEventListener('focus', () => {
+  _windowFocused = true;
+  updateParticleRuntime();
+});
+window.addEventListener('blur', () => {
+  _windowFocused = false;
+  updateParticleRuntime();
+});
 
 initPatcherStartup();
