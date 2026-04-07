@@ -7,15 +7,25 @@ window.NEWS_DATA = [
     createdAt: '2026-04-06T09:00:00-06:00',
     published: true,
     cardImage: 'https://blog.gravityus.com/wp-content/uploads/2012/06/rosdposter02.png',
+    cardImagePosX: 100,
+    cardImagePosY: 50,
+    cardImageZoom: 110,
+    cardMaskSize: 90,
+    modalImage: 'https://blog.gravityus.com/wp-content/uploads/2012/06/rosdposter02.png',
+    modalImagePosX: 50,
+    modalImagePosY: 50,
+    modalImageZoom: 100,
     images: [
       'https://blog.gravityus.com/wp-content/uploads/2012/06/rosdposter02.png'
     ],
     body: `
+
       <p>El parche 2.4.1 introduce dos nuevas mazmorras de instancia ambientadas en el reino aéreo de Eclage. Diseñadas para grupos de 5 a 12 jugadores de nivel 185+.</p>
       <p class="modal-detail"><strong style="color:var(--gold-dim)">Nuevas instancias:</strong><br>
       — <em>Cielo Fracturado</em>: 3 pisos con boss final Ariel el Ángel Corrompido. Drop único: Alas de Eclage [1].<br>
       — <em>Cripta de la Raíz</em>: Mazmorra lineal con límite de 45 min. Drop único: Raíz del Yggdrasil Antiguo.</p>
       <p>Ambas tienen cooldown de 23 h por personaje. Entradas en Eclage (ecl_in01 168, 42).</p>
+    
     `
   },
   {
@@ -26,6 +36,7 @@ window.NEWS_DATA = [
     createdAt: '2026-04-01T10:00:00-06:00',
     published: true,
     body: `
+
       <p>Durante todo Abril los campos de Prontera se llenan de cerezos. Recolecta <em>Pétalos de Sakura</em> derrotando monstruos de nivel 50-120 en mapas abiertos.</p>
       <p class="modal-detail"><strong style="color:var(--gold-dim)">Recompensas:</strong><br>
       — 50 pétalos: Diadema de Sakura (cosmético, STR +1)<br>
@@ -33,6 +44,7 @@ window.NEWS_DATA = [
       — 300 pétalos: Mascota exclusiva Conejo de Flor de Cerezo<br>
       — 500 pétalos: Montura Dragón Rosa (30 días)</p>
       <p>El NPC <em>Hanami</em> estará en Prontera (prt_fild01 150, 180) hasta el 20 de Abril a las 23:59 GMT-6.</p>
+    
     `
   },
   {
@@ -43,6 +55,7 @@ window.NEWS_DATA = [
     createdAt: '2026-03-28T13:00:00-06:00',
     published: true,
     body: `
+
       <p>El Miércoles 8 de Abril realizaremos un mantenimiento de 4 horas. El servidor estará completamente fuera de línea en ese período.</p>
       <p class="modal-detail"><strong style="color:var(--gold-dim)">Cambios incluidos:</strong><br>
       — Migración del servidor de mapas a hardware nuevo (−15 ms de latencia estimada)<br>
@@ -50,6 +63,7 @@ window.NEWS_DATA = [
       — Corrección de memoria en el módulo de instancias<br>
       — Rebalanceo de spawns en mapas de leveo 100-150</p>
       <p>Como compensación, todos los personajes recibirán una <em>Caja de Compensación</em> al conectarse tras el mantenimiento.</p>
+    
     `
   },
   {
@@ -60,6 +74,7 @@ window.NEWS_DATA = [
     createdAt: '2026-03-22T16:00:00-06:00',
     published: true,
     body: `
+
       <p>Tras análisis de datos de combate en WoE y BG de las últimas 6 semanas, aplicamos los siguientes ajustes:</p>
       <p class="modal-detail"><strong style="color:var(--gold-dim)">Royal Guard:</strong><br>
       — Overbrand: reducción de daño en PvP del 12% (sin cambios en PvE)<br>
@@ -69,6 +84,7 @@ window.NEWS_DATA = [
       — Tetra Vortex: corregido el cálculo de MATK con equipo de mano izquierda<br>
       — Reading Spellbook: el cooldown se reinicia correctamente al morir<br>
       — Jack Frost: normalizado el hitbox en celdas de esquina</p>
+    
     `
   },
   {
@@ -79,12 +95,14 @@ window.NEWS_DATA = [
     createdAt: '2026-03-15T12:30:00-06:00',
     published: true,
     body: `
+
       <p>La Temporada 3 del MVP Ranking ya está en curso. Cada MVP eliminado suma puntos según su dificultad. Consulta el ranking con el comando <code style="font-family:'JetBrains Mono';font-size:12px;color:var(--gold)">/mvprank</code>.</p>
       <p class="modal-detail"><strong style="color:var(--gold-dim)">Premios (fin de Abril):</strong><br>
       — 1° lugar: Arma MVP exclusiva + título "Asesino de Dioses"<br>
       — 2°-3° lugar: 500 Vanaheim Coins + cosmético de temporada<br>
       — 4°-10° lugar: 200 Vanaheim Coins + título "Cazador de Élite"</p>
       <p>Los puntos se acumulan solo en mapas abiertos. Los MVPs en instancias privadas no cuentan.</p>
+    
     `
   },
   {
@@ -95,6 +113,7 @@ window.NEWS_DATA = [
     createdAt: '2026-03-10T11:15:00-06:00',
     published: true,
     body: `
+
       <p>Completamos exitosamente la migración de MariaDB 10.6 a PostgreSQL 17. El proceso duró 3 horas con cero pérdida de datos.</p>
       <p class="modal-detail"><strong style="color:var(--gold-dim)">Mejoras medidas post-migración:</strong><br>
       — Latencia de escritura de inventario: −31%<br>
@@ -102,6 +121,7 @@ window.NEWS_DATA = [
       — Carga de personaje al conectarse: −18%<br>
       — Conexiones simultáneas soportadas: +60%</p>
       <p>Si encuentras algún problema con tu cuenta o gremio, abre un ticket en Discord en el canal <em>#soporte-tecnico</em>.</p>
+    
     `
   }
 ];

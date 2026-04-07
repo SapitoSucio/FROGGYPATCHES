@@ -390,11 +390,11 @@ html, body {
   pointer-events: none;
   border-radius: 0 0 0 18px;
   background-image: var(--news-card-image);
-  background-size: cover;
-  background-position: var(--news-card-pos-x, 100%) top;
+  background-size: var(--news-card-zoom, 110%) auto;
+  background-position: var(--news-card-pos-x, 100%) var(--news-card-pos-y, 50%);
   opacity: .72;
-  -webkit-mask-image: radial-gradient(90% 100% at 100% 0%, #000 16%, rgba(0,0,0,.7) 58%, rgba(0,0,0,.28) 80%, transparent 100%);
-  mask-image: radial-gradient(90% 100% at 100% 0%, #000 16%, rgba(0,0,0,.7) 58%, rgba(0,0,0,.28) 80%, transparent 100%);
+  -webkit-mask-image: radial-gradient(var(--news-card-mask-size, 90%) 100% at 100% 0%, #000 16%, rgba(0,0,0,.7) 58%, rgba(0,0,0,.28) 80%, transparent 100%);
+  mask-image: radial-gradient(var(--news-card-mask-size, 90%) 100% at 100% 0%, #000 16%, rgba(0,0,0,.7) 58%, rgba(0,0,0,.28) 80%, transparent 100%);
 }
 
 .news-tag {
@@ -951,16 +951,20 @@ html, body {
 
 .modal-news-figure {
   margin: 0 0 1rem 0;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(200,168,75,.25);
+  box-shadow: 0 10px 26px rgba(0,0,0,.28);
 }
 
 .modal-news-image {
   width: 100%;
-  max-height: 240px;
-  object-fit: cover;
-  object-position: center;
-  border-radius: 12px;
-  border: 1px solid rgba(200,168,75,.25);
-  box-shadow: 0 10px 26px rgba(0,0,0,.28);
+  height: 100%;
+  background-image: var(--modal-news-image);
+  background-size: var(--modal-news-zoom, 100%) auto;
+  background-position: var(--modal-news-pos-x, 50%) var(--modal-news-pos-y, 50%);
+  background-repeat: no-repeat;
 }
 
 .modal-close {

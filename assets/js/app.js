@@ -90,12 +90,21 @@ function clampPercent(value, fallback) {
   return Math.min(200, Math.max(-200, Math.round(parsed)));
 }
 
+function clampRange(value, min, max, fallback) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.round(parsed)));
+}
+
 function getCardImage(item) {
   const url = normalizeImageUrl(item.cardImage || item.image);
   if (!url) return null;
   return {
     url,
-    posX: clampPercent(item.cardImagePosX, 100)
+    posX: clampPercent(item.cardImagePosX, 100),
+    posY: clampPercent(item.cardImagePosY, 50),
+    zoom: clampRange(item.cardImageZoom, 50, 400, 110),
+    maskSize: clampRange(item.cardMaskSize, 20, 200, 90)
   };
 }
 
@@ -148,7 +157,7 @@ function renderNews() {
     }
 
     card.innerHTML = `
-      ${cardImage ? `<div class="news-card-media" style="--news-card-image: url('${cardImage.url.replace(/'/g, '%27')}'); --news-card-pos-x: ${cardImage.posX}%;"></div>` : ''}
+      ${cardImage ? `<div class="news-card-media" style="--news-card-image: url('${cardImage.url.replace(/'/g, '%27')}'); --news-card-pos-x: ${cardImage.posX}%; --news-card-pos-y: ${cardImage.posY}%; --news-card-zoom: ${cardImage.zoom}%; --news-card-mask-size: ${cardImage.maskSize}%;"></div>` : ''}
       <div class="news-tag ${item.tag}">${getTagLabel(item.tag)}</div>
       <h3>${item.title}</h3>
       <p>${item.excerpt}</p>
@@ -166,9 +175,11 @@ function renderNews() {
 function openModal(newsItem) {
   const modalImages = getModalImages(newsItem);
   const modalPosX = clampPercent(newsItem.modalImagePosX, 50);
+  const modalPosY = clampPercent(newsItem.modalImagePosY, 50);
+  const modalZoom = clampRange(newsItem.modalImageZoom, 50, 400, 100);
   const imagesMarkup = modalImages.map((imageUrl, index) => `
     <figure class="modal-news-figure">
-      <img class="modal-news-image" src="${escapeHtml(imageUrl)}" alt="Imagen ${index + 1} de ${escapeHtml(newsItem.title || 'noticia')}" style="object-position: ${modalPosX}% center;">
+      <div class="modal-news-image" role="img" aria-label="Imagen ${index + 1} de ${escapeHtml(newsItem.title || 'noticia')}" style="--modal-news-image: url('${imageUrl.replace(/'/g, '%27')}'); --modal-news-pos-x: ${modalPosX}%; --modal-news-pos-y: ${modalPosY}%; --modal-news-zoom: ${modalZoom}%;"></div>
     </figure>
   `).join('');
 
