@@ -539,7 +539,6 @@ function notificationInProgress() {
 
 function bindExternalLinks() {
   const DRAG_CLICK_THRESHOLD_PX = 3;
-  const NATIVE_DRAG_SUPPRESS_MS = 900;
   const links = document.querySelectorAll(
     '.topbar-nav a[href], .forgot-link[href], .btn-register[href]'
   );
@@ -573,6 +572,30 @@ function bindExternalLinks() {
     });
 
     link.addEventListener('pointerup', () => {
+      if (!pointerIsDown) return;
+      pointerIsDown = false;
+      if (dragged) {
+        dragged = false;
+        return;
+      }
+      open();
+    });
+
+    link.addEventListener('pointerleave', () => {
+      if (pointerIsDown) {
+        dragged = true;
+      }
+    });
+
+    link.addEventListener('lostpointercapture', () => {
+      if (pointerIsDown) {
+        dragged = true;
+      }
+    });
+
+    link.addEventListener('dragstart', (event) => {
+      event.preventDefault();
+      dragged = true;
       pointerIsDown = false;
     });
 
@@ -586,16 +609,7 @@ function bindExternalLinks() {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const lastNativeDragAt = Number(window.__rpatchurLastNativeDragAt || 0);
-      if (Number.isFinite(lastNativeDragAt) && (Date.now() - lastNativeDragAt) < NATIVE_DRAG_SUPPRESS_MS) {
-        dragged = false;
-        return;
-      }
-      if (dragged) {
-        dragged = false;
-        return;
-      }
-      open();
+      // Opening is handled on pointerup for mouse/touch and on keydown for keyboard.
     });
 
     link.addEventListener('keydown', (event) => {
