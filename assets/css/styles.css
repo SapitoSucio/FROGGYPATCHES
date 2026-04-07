@@ -1305,7 +1305,9 @@ html, body {
 }
 
 html.vt-news-opening .modal-backdrop,
-html.vt-news-opening .modal {
+html.vt-news-opening .modal,
+html.vt-news-closing .modal-backdrop,
+html.vt-news-closing .modal {
   transition: none !important;
 }
 
@@ -1313,6 +1315,15 @@ html.vt-news-opening .modal {
   ::view-transition-group(*) {
     animation-duration: .42s;
     animation-timing-function: cubic-bezier(.34,1.25,.64,1);
+  }
+
+  /* Keep snapshot boxes filling the animated group so size interpolation is visible. */
+  html.vt-news-opening::view-transition-old(*),
+  html.vt-news-opening::view-transition-new(*),
+  html.vt-news-closing::view-transition-old(*),
+  html.vt-news-closing::view-transition-new(*) {
+    width: 100%;
+    height: 100%;
   }
 }
 

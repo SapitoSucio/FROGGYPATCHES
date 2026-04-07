@@ -401,6 +401,7 @@ let _modalIsOpen = false;
 const _supportsViewTransitions = typeof document.startViewTransition === 'function';
 let _activeCardTransitionName = '';
 let _activeTransitionCardEl = null;
+let _modalSourceCardEl = null;
 
 function makeViewTransitionName() {
   return `news-card-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
@@ -437,6 +438,7 @@ function setModalContent(newsItem) {
 
 function openModal(newsItem, cardEl = null) {
   if (!_supportsViewTransitions || !cardEl) {
+    _modalSourceCardEl = null;
     setModalContent(newsItem);
     dom.backdrop.classList.add('open');
     _modalIsOpen = true;
@@ -447,6 +449,7 @@ function openModal(newsItem, cardEl = null) {
 
   _activeCardTransitionName = makeViewTransitionName();
   _activeTransitionCardEl = cardEl;
+  _modalSourceCardEl = cardEl;
   cardEl.style.viewTransitionName = _activeCardTransitionName;
 
   const vt = document.startViewTransition(() => {
@@ -469,8 +472,37 @@ function openModal(newsItem, cardEl = null) {
 
 function closeModal() {
   if (!_modalIsOpen) return;
-  dom.backdrop.classList.remove('open');
-  _modalIsOpen = false;
+  const sourceCard = _modalSourceCardEl;
+
+  if (!_supportsViewTransitions || !sourceCard || !sourceCard.isConnected) {
+    dom.backdrop.classList.remove('open');
+    _modalIsOpen = false;
+    _modalSourceCardEl = null;
+    return;
+  }
+
+  if (_activeCardTransitionName) clearActiveViewTransitionNames(_activeTransitionCardEl);
+
+  _activeCardTransitionName = makeViewTransitionName();
+  _activeTransitionCardEl = sourceCard;
+  dom.modalEl.style.viewTransitionName = _activeCardTransitionName;
+
+  const vt = document.startViewTransition(() => {
+    document.documentElement.classList.add('vt-news-closing');
+    // old state: named modal. new state: named card.
+    dom.modalEl.style.viewTransitionName = '';
+    sourceCard.style.viewTransitionName = _activeCardTransitionName;
+    dom.backdrop.classList.remove('open');
+    _modalIsOpen = false;
+  });
+
+  vt.finished
+    .catch(() => {})
+    .finally(() => {
+      clearActiveViewTransitionNames(sourceCard);
+      document.documentElement.classList.remove('vt-news-closing');
+      _modalSourceCardEl = null;
+    });
 }
 
 /* ================================================================
