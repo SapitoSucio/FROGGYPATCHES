@@ -469,8 +469,8 @@ html, body {
   color: var(--gold);
 }
 
-/* NovaTools links */
-.novatools-link {
+/* VanaTools links */
+.Vanatools-link {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -488,12 +488,12 @@ html, body {
   text-align: left;
 }
 
-.novatools-link:hover {
+.Vanatools-link:hover {
   color: var(--gold);
   background: rgba(200,168,75,.07);
 }
 
-.novatools-link svg {
+.Vanatools-link svg {
   width: 13px;
   height: 13px;
   fill: currentColor;

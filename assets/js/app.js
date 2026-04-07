@@ -53,7 +53,7 @@ const TRANSLATIONS = {
     savedAccounts: 'Cuentas guardadas', clearAccounts: 'Limpiar',
     optionsTitle: 'Opciones', optTheme: 'Tema', optLang: 'Idioma',
     themeDark: 'Oscuro', themeLight: 'Claro',
-    novatoolsTitle: 'Nova Tools', ntWiki: 'Wiki', ntFluxCP: 'Control Panel',
+    VanatoolsTitle: 'Vana Tools', ntWiki: 'Wiki', ntFluxCP: 'Control Panel',
     ntDiscord: 'Discord', ntStats: 'Estadísticas'
   },
   en: {
@@ -105,7 +105,7 @@ const TRANSLATIONS = {
     savedAccounts: 'Saved accounts', clearAccounts: 'Clear',
     optionsTitle: 'Options', optTheme: 'Theme', optLang: 'Language',
     themeDark: 'Dark', themeLight: 'Light',
-    novatoolsTitle: 'Nova Tools', ntWiki: 'Wiki', ntFluxCP: 'Control Panel',
+    VanatoolsTitle: 'Vana Tools', ntWiki: 'Wiki', ntFluxCP: 'Control Panel',
     ntDiscord: 'Discord', ntStats: 'Statistics'
   }
 };
@@ -263,9 +263,9 @@ const dom = {
   accountList: $('account-list'),
   accountClear: $('account-clear'),
   panelOptions: $('panel-options'),
-  panelNovatools: $('panel-novatools'),
+  panelVanatools: $('panel-Vanatools'),
   btnOptions: $('btn-options'),
-  btnNovatools: $('btn-novatools'),
+  btnVanatools: $('btn-Vanatools'),
   themeToggleInput: $('theme-toggle-input')
 };
 
@@ -437,10 +437,10 @@ function closeModal() {
    FLOAT PANELS (Gear + Star)
    ================================================================ */
 function openPanel(which) {
-  const panel = which === 'options' ? dom.panelOptions : dom.panelNovatools;
-  const btn   = which === 'options' ? dom.btnOptions   : dom.btnNovatools;
-  const other = which === 'options' ? dom.panelNovatools : dom.panelOptions;
-  const otherBtn = which === 'options' ? dom.btnNovatools : dom.btnOptions;
+  const panel = which === 'options' ? dom.panelOptions : dom.panelVanatools;
+  const btn   = which === 'options' ? dom.btnOptions   : dom.btnVanatools;
+  const other = which === 'options' ? dom.panelVanatools : dom.panelOptions;
+  const otherBtn = which === 'options' ? dom.btnVanatools : dom.btnOptions;
 
   // Close the other panel first
   other.classList.remove('open');
@@ -453,9 +453,9 @@ function openPanel(which) {
 
 function closePanels() {
   dom.panelOptions.classList.remove('open');
-  dom.panelNovatools.classList.remove('open');
+  dom.panelVanatools.classList.remove('open');
   dom.btnOptions.classList.remove('panel-active');
-  dom.btnNovatools.classList.remove('panel-active');
+  dom.btnVanatools.classList.remove('panel-active');
 }
 
 /* ================================================================
@@ -827,14 +827,14 @@ function handleLaunch() {
 function bindExternalLinks() {
   const THRESHOLD = 3;
   const links = document.querySelectorAll(
-    '.topbar-nav a[href], .forgot-link[href], .btn-register[href], .novatools-link[data-href]'
+    '.topbar-nav a[href], .forgot-link[href], .btn-register[href], .Vanatools-link[data-href]'
   );
 
   links.forEach(link => {
-    const isNovalink = link.hasAttribute('data-href');
-    const externalUrl = isNovalink ? link.dataset.href : link.getAttribute('href');
+    const isVanalink = link.hasAttribute('data-href');
+    const externalUrl = isVanalink ? link.dataset.href : link.getAttribute('href');
     if (!externalUrl || externalUrl === '#') return;
-    if (!isNovalink) link.setAttribute('href', '#');
+    if (!isVanalink) link.setAttribute('href', '#');
 
     let downX = 0, downY = 0, isDown = false, dragged = false;
     const open = () => openExternalUrl(externalUrl);
@@ -893,12 +893,12 @@ dom.backdrop.addEventListener('click', e => { if (e.target === dom.backdrop) clo
 
 // Panels: gear + star
 dom.btnOptions.addEventListener('click', e => { e.stopPropagation(); openPanel('options'); });
-dom.btnNovatools.addEventListener('click', e => { e.stopPropagation(); openPanel('novatools'); });
+dom.btnVanatools.addEventListener('click', e => { e.stopPropagation(); openPanel('Vanatools'); });
 
 // Close panels on outside click
 document.addEventListener('click', e => {
   if (!e.target.closest('#panel-options') && !e.target.closest('#btn-options') &&
-      !e.target.closest('#panel-novatools') && !e.target.closest('#btn-novatools')) {
+      !e.target.closest('#panel-Vanatools') && !e.target.closest('#btn-Vanatools')) {
     closePanels();
   }
 });
