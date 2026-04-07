@@ -538,19 +538,55 @@ function notificationInProgress() {
 }
 
 function bindExternalLinks() {
+  const DRAG_CLICK_THRESHOLD_PX = 6;
   const links = document.querySelectorAll(
     '.topbar-nav a[href], .forgot-link[href], .btn-register[href]'
   );
 
   links.forEach((link) => {
+    let pointerDownX = 0;
+    let pointerDownY = 0;
+    let pointerIsDown = false;
+    let dragged = false;
+
     const open = () => {
       const url = link.getAttribute('href');
       openExternalUrl(url);
     };
 
+    link.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      pointerIsDown = true;
+      dragged = false;
+      pointerDownX = event.clientX;
+      pointerDownY = event.clientY;
+    });
+
+    link.addEventListener('pointermove', (event) => {
+      if (!pointerIsDown || dragged) return;
+      const dx = event.clientX - pointerDownX;
+      const dy = event.clientY - pointerDownY;
+      if ((dx * dx + dy * dy) >= (DRAG_CLICK_THRESHOLD_PX * DRAG_CLICK_THRESHOLD_PX)) {
+        dragged = true;
+      }
+    });
+
+    link.addEventListener('pointerup', () => {
+      pointerIsDown = false;
+    });
+
+    link.addEventListener('pointercancel', () => {
+      pointerIsDown = false;
+      dragged = false;
+    });
+
     link.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
+      if (dragged) {
+        dragged = false;
+        return;
+      }
       open();
     });
 
