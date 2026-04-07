@@ -422,6 +422,14 @@ function setPatcherBarViewTransitionName(name = '') {
   if (dom.patcherBar) dom.patcherBar.style.viewTransitionName = name;
 }
 
+function triggerModalShadowReveal() {
+  if (!dom.modalEl) return;
+  dom.modalEl.classList.remove('shadow-reveal');
+  // Force reflow so the animation can replay on every open.
+  void dom.modalEl.offsetWidth;
+  dom.modalEl.classList.add('shadow-reveal');
+}
+
 function clearOpeningTransitionClipStyle() {
   if (_activeOpeningClipStyleEl && _activeOpeningClipStyleEl.parentNode) {
     _activeOpeningClipStyleEl.parentNode.removeChild(_activeOpeningClipStyleEl);
@@ -488,11 +496,13 @@ function setModalContent(newsItem) {
 function openModal(newsItem, cardEl = null) {
   setPatcherBarViewTransitionName('');
   clearOpeningTransitionClipStyle();
+  if (dom.modalEl) dom.modalEl.classList.remove('shadow-reveal');
 
   if (!_supportsViewTransitions || !cardEl) {
     _modalSourceCardEl = null;
     setModalContent(newsItem);
     dom.backdrop.classList.add('open');
+    triggerModalShadowReveal();
     _modalIsOpen = true;
     updateParticleRuntime();
     return;
@@ -524,12 +534,14 @@ function openModal(newsItem, cardEl = null) {
       clearOpeningTransitionClipStyle();
       clearActiveViewTransitionNames(_activeTransitionCardEl);
       document.documentElement.classList.remove('vt-news-opening');
+      requestAnimationFrame(() => triggerModalShadowReveal());
     });
 }
 
 function closeModal() {
   if (!_modalIsOpen) return;
   const sourceCard = _modalSourceCardEl;
+  if (dom.modalEl) dom.modalEl.classList.remove('shadow-reveal');
 
   if (!_supportsViewTransitions || !sourceCard || !sourceCard.isConnected) {
     setPatcherBarViewTransitionName('');
