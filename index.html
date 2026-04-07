@@ -254,12 +254,10 @@
   }
   .modal-backdrop.open .modal { transform: none; opacity: 1; }
 
-  /* Glass highlight line */
   .modal::before {
     content: ''; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
     background: linear-gradient(90deg, transparent, rgba(200,168,75,.4), transparent);
   }
-  /* Subtle inner glow */
   .modal::after {
     content: ''; position: absolute; inset: 0; border-radius: 20px; pointer-events: none;
     background: radial-gradient(ellipse 60% 30% at 50% 0%, rgba(200,168,75,.05) 0%, transparent 70%);
@@ -493,7 +491,6 @@
 </div>
 
 <script>
-/* ── News data ── */
 const NEWS = [
   { tag:'update', tagLabel:'Actualización',
     title:'Parche 2.4.1 — Nuevas instancias de Eclage',
@@ -568,133 +565,208 @@ const NEWS = [
   }
 ];
 
-/* ── Render cards ── */
-const newsList = document.getElementById('news-list');
-NEWS.forEach((n, i) => {
-  const card = document.createElement('div');
-  card.className = 'news-card';
-  card.style.animationDelay = (i * 0.055) + 's';
-  card.innerHTML = `<div class="news-tag ${n.tag}">${n.tagLabel}</div>
-<h3>${n.title}</h3><p>${n.excerpt}</p>
-<div class="news-date">${n.date}</div>
-<div class="news-read-more">Leer más ›</div>`;
-  card.addEventListener('click', () => openModal(n));
-  newsList.appendChild(card);
-});
+const $ = (id) => document.getElementById(id);
 
-/* ── Modal ── */
-const backdrop = document.getElementById('modal-backdrop');
+const dom = {
+  newsList: $('news-list'),
+  backdrop: $('modal-backdrop'),
+  modalClose: $('modal-close'),
+  modalTag: $('modal-tag'),
+  modalTitle: $('modal-title'),
+  modalDate: $('modal-date'),
+  modalBody: $('modal-body'),
+
+  clockTime: $('clock-time'),
+
+  username: $('username'),
+  password: $('password'),
+  btnLaunch: $('btn-launch'),
+
+  toast: $('toast'),
+  toastIcon: $('toast-icon'),
+  toastMsg: $('toast-msg'),
+
+  patchLog: $('patch-log'),
+  progressFill: $('progress-fill'),
+  progressPct: $('progress-pct'),
+  progressSpeed: $('progress-speed'),
+  playersOnline: $('players-online'),
+  patchVersion: document.querySelector('.patch-version-pill'),
+};
+
+const state = {
+  pct: 0,
+  patchReady: false,
+  patching: false,
+  updateRequested: false,
+};
+
+function renderNews() {
+  const frag = document.createDocumentFragment();
+
+  NEWS.forEach((n, i) => {
+    const card = document.createElement('div');
+    card.className = 'news-card';
+    card.style.animationDelay = `${i * 0.055}s`;
+    card.innerHTML = `
+      <div class="news-tag ${n.tag}">${n.tagLabel}</div>
+      <h3>${n.title}</h3>
+      <p>${n.excerpt}</p>
+      <div class="news-date">${n.date}</div>
+      <div class="news-read-more">Leer más ›</div>
+    `;
+    card.addEventListener('click', () => openModal(n));
+    frag.appendChild(card);
+  });
+
+  dom.newsList.appendChild(frag);
+}
 
 function openModal(n) {
-  document.getElementById('modal-tag').innerHTML = `<span class="news-tag ${n.tag}">${n.tagLabel}</span>`;
-  document.getElementById('modal-title').textContent = n.title;
-  document.getElementById('modal-date').textContent  = n.date;
-  document.getElementById('modal-body').innerHTML    = n.body;
-  document.getElementById('modal-body').scrollTop   = 0;
-  backdrop.classList.add('open');
+  dom.modalTag.innerHTML = `<span class="news-tag ${n.tag}">${n.tagLabel}</span>`;
+  dom.modalTitle.textContent = n.title;
+  dom.modalDate.textContent = n.date;
+  dom.modalBody.innerHTML = n.body;
+  dom.modalBody.scrollTop = 0;
+  dom.backdrop.classList.add('open');
 }
-function closeModal() { backdrop.classList.remove('open'); }
 
-document.getElementById('modal-close').addEventListener('click', closeModal);
-backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+function closeModal() {
+  dom.backdrop.classList.remove('open');
+}
 
-/* ── Clock GMT-6 ── */
 function updateClock() {
   const gmt6 = new Date(Date.now() - 6 * 3600000);
-  const hh = String(gmt6.getUTCHours()).padStart(2,'0');
-  const mm = String(gmt6.getUTCMinutes()).padStart(2,'0');
-  const ss = String(gmt6.getUTCSeconds()).padStart(2,'0');
-  document.getElementById('clock-time').textContent = `${hh}:${mm}:${ss}`;
+  const hh = String(gmt6.getUTCHours()).padStart(2, '0');
+  const mm = String(gmt6.getUTCMinutes()).padStart(2, '0');
+  const ss = String(gmt6.getUTCSeconds()).padStart(2, '0');
+  dom.clockTime.textContent = `${hh}:${mm}:${ss}`;
 }
-updateClock(); setInterval(updateClock, 1000);
 
-/* ── Particles ── */
-const canvas = document.getElementById('particles');
+const canvas = $('particles');
 const ctx = canvas.getContext('2d');
-let W, H, pts = [];
-function resize(){ W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
-resize(); addEventListener('resize', resize);
-function mkP(){ return { x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.28, vy:-Math.random()*.35-.08, r:Math.random()*1.3+.3, life:0, max:200+Math.random()*260, c:Math.random()<.6?'200,168,75':'80,120,200' }; }
-for(let i=0;i<70;i++){ const p=mkP(); p.life=Math.random()*p.max; pts.push(p); }
-(function anim(){ ctx.clearRect(0,0,W,H); pts.forEach((p,i)=>{ p.life++; if(p.life>p.max){pts[i]=mkP();return;} const a=Math.sin(p.life/p.max*Math.PI)*.45; ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=`rgba(${p.c},${a})`;ctx.fill(); p.x+=p.vx;p.y+=p.vy; }); requestAnimationFrame(anim); })();
+let W = 0;
+let H = 0;
+let particles = [];
 
-/* ── Toast ── */
-function showToast(msg, icon='⚑'){
-  const t=document.getElementById('toast');
-  document.getElementById('toast-msg').textContent=msg;
-  document.getElementById('toast-icon').textContent=icon;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3600);
+function resizeCanvas() {
+  W = canvas.width = innerWidth;
+  H = canvas.height = innerHeight;
 }
 
-/* ── Patcher real (backend rpatchur) ── */
-let cp = 0;
-let patchingActive = false;
-let patchReady = false;
-let updateRequested = false;
-let backendSignalReceived = false;
-let startupRetryTimer = null;
-let startupRetryCount = 0;
+function createParticle() {
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.28,
+    vy: -Math.random() * 0.35 - 0.08,
+    r: Math.random() * 1.3 + 0.3,
+    life: 0,
+    max: 200 + Math.random() * 260,
+    c: Math.random() < 0.6 ? '200,168,75' : '80,120,200',
+  };
+}
 
-const logEl = document.getElementById('patch-log');
-const fillEl = document.getElementById('progress-fill');
-const pctEl = document.getElementById('progress-pct');
-const speedEl = document.getElementById('progress-speed');
-const patchVersionPill = document.querySelector('.patch-version-pill');
+function initParticles() {
+  particles = [];
+  for (let i = 0; i < 70; i += 1) {
+    const p = createParticle();
+    p.life = Math.random() * p.max;
+    particles.push(p);
+  }
+}
+
+function animateParticles() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach((p, i) => {
+    p.life += 1;
+    if (p.life > p.max) {
+      particles[i] = createParticle();
+      return;
+    }
+    const a = Math.sin((p.life / p.max) * Math.PI) * 0.45;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${p.c},${a})`;
+    ctx.fill();
+    p.x += p.vx;
+    p.y += p.vy;
+  });
+  requestAnimationFrame(animateParticles);
+}
+
+function showToast(msg, icon = '⚑') {
+  dom.toastMsg.textContent = msg;
+  dom.toastIcon.textContent = icon;
+  dom.toast.classList.add('show');
+  setTimeout(() => dom.toast.classList.remove('show'), 3600);
+}
+
+const bridge = {
+  has() {
+    return typeof window.external?.invoke === 'function';
+  },
+
+  invoke(payload) {
+    if (!this.has()) return false;
+
+    const request = typeof payload === 'string'
+      ? payload
+      : JSON.stringify(payload);
+
+    try {
+      const result = window.external.invoke(request);
+
+      if (result && typeof result.then === 'function') {
+        result.catch((err) => {
+          state.patching = false;
+          state.updateRequested = false;
+          setPatchLog('warn', `Bridge error: ${String(err)}`);
+          dom.progressSpeed.textContent = 'bridge error';
+          dom.progressFill.classList.remove('active');
+        });
+      }
+
+      return true;
+    } catch (err) {
+      state.patching = false;
+      state.updateRequested = false;
+      setPatchLog('warn', `Bridge error: ${String(err)}`);
+      dom.progressSpeed.textContent = 'bridge error';
+      dom.progressFill.classList.remove('active');
+      return false;
+    }
+  },
+
+  cmd(command) {
+    return this.invoke(command);
+  },
+
+  json(fn, parameters) {
+    return this.invoke({ function: fn, parameters });
+  },
+};
 
 function setPatchLog(type, msg) {
-  logEl.className = `patcher-log-line ${type}`;
-  logEl.textContent = msg;
+  dom.patchLog.className = `patcher-log-line ${type}`;
+  dom.patchLog.textContent = msg;
 }
 
-function animPct(target) {
-  const start = cp;
+function setProgress(target) {
+  const start = state.pct;
   const duration = 550;
   const t0 = performance.now();
+
   function step(now) {
     const p = Math.min((now - t0) / duration, 1);
     const ease = 1 - Math.pow(1 - p, 3);
-    cp = Math.round(start + (target - start) * ease);
-    fillEl.style.width = `${cp}%`;
-    pctEl.textContent = `${cp}%`;
+    state.pct = Math.round(start + (target - start) * ease);
+    dom.progressFill.style.width = `${state.pct}%`;
+    dom.progressPct.textContent = `${state.pct}%`;
     if (p < 1) requestAnimationFrame(step);
   }
+
   requestAnimationFrame(step);
-}
-
-function hasExternalBridge() {
-  return !!(window.external && typeof window.external.invoke === 'function');
-}
-
-function externalInvoke(payload) {
-  if (!hasExternalBridge()) return false;
-  const request = typeof payload === 'string' ? payload : JSON.stringify(payload);
-
-  try {
-    const result = window.external.invoke(request);
-    if (result && typeof result.then === 'function') {
-      result.catch((err) => {
-        updateRequested = false;
-        patchingActive = false;
-        setPatchLog('warn', `Bridge error: ${String(err)}`);
-        speedEl.textContent = 'bridge error';
-      });
-    }
-    return true;
-  } catch (err) {
-    setPatchLog('warn', `Bridge error: ${String(err)}`);
-    speedEl.textContent = 'bridge error';
-  }
-  return false;
-}
-
-function invokeSimple(cmd) {
-  return externalInvoke(cmd);
-}
-
-function invokeJson(functionName, parameters) {
-  return externalInvoke(JSON.stringify({ function: functionName, parameters }));
 }
 
 function humanFileSize(size) {
@@ -705,187 +777,215 @@ function humanFileSize(size) {
   return `${n.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
 }
 
-function requestStartUpdate(showFeedback) {
-  if (!hasExternalBridge() || patchReady || patchingActive || updateRequested) return;
-  updateRequested = true;
-  patchingActive = true;
-  patchReady = false;
-  fillEl.classList.add('active');
+function requestStartUpdate(showFeedback = false) {
+  if (!bridge.has() || state.patchReady || state.patching || state.updateRequested) return;
+
+  state.updateRequested = true;
+  state.patching = true;
+  state.patchReady = false;
+
+  dom.progressFill.classList.add('active');
   setPatchLog('info', 'Conectando con servidor de parches...');
-  speedEl.textContent = 'iniciando';
-  const sent = invokeSimple('start_update');
+  dom.progressSpeed.textContent = 'iniciando';
+
+  const sent = bridge.cmd('start_update');
   if (!sent) {
-    updateRequested = false;
-    patchingActive = false;
-    setPatchLog('warn', 'Bridge no disponible todavía. Reintentando...');
-    speedEl.textContent = 'esperando bridge';
+    state.updateRequested = false;
+    state.patching = false;
+    setPatchLog('warn', 'Bridge no disponible.');
+    dom.progressSpeed.textContent = 'sin bridge';
     return;
   }
+
   if (showFeedback) showToast('Iniciando actualización...', '↻');
 }
 
-function scheduleStartupRetry() {
-  if (startupRetryTimer) clearInterval(startupRetryTimer);
-  startupRetryCount = 0;
-  startupRetryTimer = setInterval(() => {
-    if (backendSignalReceived || patchReady) {
-      clearInterval(startupRetryTimer);
-      startupRetryTimer = null;
-      return;
-    }
-    if (!hasExternalBridge()) {
-      return;
-    }
-    startupRetryCount += 1;
-    if (startupRetryCount > 20) {
-      clearInterval(startupRetryTimer);
-      startupRetryTimer = null;
-      setPatchLog('warn', 'No hubo respuesta del backend. Verifica logs/conectividad.');
-      speedEl.textContent = 'sin respuesta';
-      return;
-    }
-    patchingActive = false;
-    updateRequested = false;
-    setPatchLog('info', `Conectando con servidor de parches... (reintento ${startupRetryCount})`);
-    requestStartUpdate(false);
-  }, 1500);
+function parsePatchList(raw) {
+  return raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('//'));
+}
+
+async function loadPatchListSummary() {
+  try {
+    const response = await fetch('./plist.txt', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const raw = await response.text();
+    const lines = parsePatchList(raw);
+
+    if (dom.patchVersion) dom.patchVersion.textContent = `plist ${lines.length}`;
+    setPatchLog('info', `Lista real cargada: ${lines.length} parche(s) en plist.txt`);
+    dom.progressSpeed.textContent = 'lista verificada';
+  } catch {
+    setPatchLog('warn', 'Vista web sin bridge real del patcher.');
+    dom.progressSpeed.textContent = 'modo web';
+    dom.progressFill.classList.remove('active');
+  }
 }
 
 function patchingStatusReady() {
-  backendSignalReceived = true;
-  patchReady = true;
-  patchingActive = false;
-  updateRequested = false;
-  animPct(100);
+  state.patchReady = true;
+  state.patching = false;
+  state.updateRequested = false;
+
+  setProgress(100);
   setPatchLog('ok', 'Cliente actualizado — listo para jugar.');
-  speedEl.textContent = '—';
-  fillEl.classList.remove('active');
+  dom.progressSpeed.textContent = '—';
+  dom.progressFill.classList.remove('active');
+
+  if (dom.patchVersion) dom.patchVersion.textContent = 'ready';
   showToast('Cliente listo. ¡Que comience la aventura!', '✦');
 }
 
 function patchingStatusError(errorMsg) {
-  backendSignalReceived = true;
-  patchReady = false;
-  patchingActive = false;
-  updateRequested = false;
+  state.patchReady = false;
+  state.patching = false;
+  state.updateRequested = false;
+
   setPatchLog('warn', `Error: ${errorMsg}`);
-  speedEl.textContent = 'error';
-  fillEl.classList.remove('active');
+  dom.progressSpeed.textContent = 'error';
+  dom.progressFill.classList.remove('active');
   showToast('Falló la actualización. Revisa el log.', '⚠');
 }
 
 function patchingStatusDownloading(nbDownloaded, nbTotal, bytesDownloaded, bytesTotal, bytesPerSec) {
-  backendSignalReceived = true;
-  patchReady = false;
-  patchingActive = true;
+  state.patchReady = false;
+  state.patching = true;
+
   const pct = bytesTotal > 0
     ? (100 * bytesDownloaded) / bytesTotal
     : (nbTotal > 0 ? (100 * nbDownloaded) / nbTotal : 0);
-  animPct(pct);
+
+  setProgress(pct);
   setPatchLog('warn', `Descargando parche ${nbDownloaded}/${nbTotal}...`);
+
   const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
   const totals = bytesTotal > 0
     ? `${humanFileSize(bytesDownloaded)} / ${humanFileSize(bytesTotal)}`
     : `${humanFileSize(bytesDownloaded)} descargados`;
-  speedEl.textContent = `${speed} · ${totals}`;
-  if (patchVersionPill) patchVersionPill.textContent = `patch ${nbDownloaded}/${nbTotal}`;
+
+  dom.progressSpeed.textContent = `${speed} · ${totals}`;
+  if (dom.patchVersion) dom.patchVersion.textContent = `patch ${nbDownloaded}/${nbTotal}`;
 }
 
 function patchingStatusInstalling(nbInstalled, nbTotal) {
-  backendSignalReceived = true;
-  patchReady = false;
-  patchingActive = true;
+  state.patchReady = false;
+  state.patching = true;
+
   const pct = nbTotal > 0 ? (100 * nbInstalled) / nbTotal : 0;
-  animPct(pct);
+  setProgress(pct);
   setPatchLog('info', `Instalando parche ${nbInstalled}/${nbTotal}...`);
-  speedEl.textContent = 'instalando';
+  dom.progressSpeed.textContent = 'instalando';
 }
 
 function patchingStatusDownloadAndInstall(nbDownloaded, nbInstalled, nbTotal, bytesPerSec) {
-  backendSignalReceived = true;
-  patchReady = false;
-  patchingActive = true;
-  const pct = nbTotal > 0 ? (100 * (nbDownloaded + nbInstalled)) / (2 * nbTotal) : 0;
-  animPct(pct);
+  state.patchReady = false;
+  state.patching = true;
+
+  const pct = nbTotal > 0
+    ? (100 * (nbDownloaded + nbInstalled)) / (2 * nbTotal)
+    : 0;
+
+  setProgress(pct);
   setPatchLog('warn', `Descargando ${nbDownloaded}/${nbTotal} | Instalando ${nbInstalled}/${nbTotal}`);
+
   const speed = bytesPerSec > 0 ? `${humanFileSize(bytesPerSec)}/s` : '—';
-  speedEl.textContent = `${speed} · descarga+instalación concurrente`;
-  if (patchVersionPill) patchVersionPill.textContent = `conc. ${nbDownloaded}/${nbInstalled}/${nbTotal}`;
+  dom.progressSpeed.textContent = `${speed} · descarga+instalación concurrente`;
+
+  if (dom.patchVersion) {
+    dom.patchVersion.textContent = `conc. ${nbDownloaded}/${nbInstalled}/${nbTotal}`;
+  }
 }
 
 function patchingStatusPatchApplied(fileName) {
-  backendSignalReceived = true;
   setPatchLog('ok', `Patch manual aplicado: ${fileName}`);
   showToast(`Patch manual aplicado: ${fileName}`, '✦');
 }
 
 function notificationInProgress() {
-  backendSignalReceived = true;
   setPatchLog('info', 'Ya hay una actualización en progreso.');
   showToast('Ya hay un update en progreso.', '⚠');
 }
 
-/* Sin telemetría real del servidor desde patcher */
-document.getElementById('players-online').innerHTML = '—<span>sin telemetría</span>';
+function handleLaunch() {
+  const login = dom.username.value.trim();
+  const password = dom.password.value;
 
-/* ── Launch real ── */
-document.getElementById('btn-launch').addEventListener('click', () => {
-  const u = document.getElementById('username').value.trim();
-  const p = document.getElementById('password').value;
-  if (!u || !p) {
+  if (!login || !password) {
     showToast('Ingresa tu usuario y contraseña.', '⚠');
     return;
   }
-  if (!hasExternalBridge()) {
+
+  if (!bridge.has()) {
     showToast('Esta vista no tiene bridge del patcher.', '⚑');
     return;
   }
 
-  invokeJson('login', { login: u, password: p });
+  bridge.json('login', { login, password });
 
-  if (patchReady) {
-    invokeSimple('play');
-    showToast(`Lanzando cliente, bienvenido ${u}!`, '▶');
+  if (state.patchReady) {
+    bridge.cmd('play');
+    showToast(`Lanzando cliente, bienvenido ${login}!`, '▶');
     return;
   }
 
   requestStartUpdate(true);
-});
-
-['username', 'password'].forEach((id) => {
-  document.getElementById(id).addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') document.getElementById('btn-launch').click();
-  });
-});
+}
 
 function initPatcherStartup() {
-  if (patchVersionPill) patchVersionPill.textContent = '—';
+  dom.playersOnline.innerHTML = '—<span>sin telemetría</span>';
+  if (dom.patchVersion) dom.patchVersion.textContent = '—';
+  dom.progressSpeed.textContent = '—';
   setPatchLog('info', 'Esperando estado real del patcher...');
-  speedEl.textContent = '—';
 
-  if (hasExternalBridge()) {
+  if (bridge.has()) {
     requestStartUpdate(false);
-    scheduleStartupRetry();
     return;
   }
 
   let attempts = 0;
   const probe = setInterval(() => {
     attempts += 1;
-    if (hasExternalBridge()) {
+
+    if (bridge.has()) {
       clearInterval(probe);
       requestStartUpdate(false);
-      scheduleStartupRetry();
       return;
     }
+
     if (attempts >= 40) {
       clearInterval(probe);
-      fillEl.classList.remove('active');
-      setPatchLog('warn', 'Vista web sin bridge real del patcher.');
-      speedEl.textContent = 'modo web';
+      loadPatchListSummary();
     }
   }, 250);
 }
+
+dom.modalClose.addEventListener('click', closeModal);
+dom.backdrop.addEventListener('click', (e) => {
+  if (e.target === dom.backdrop) closeModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+dom.btnLaunch.addEventListener('click', handleLaunch);
+['username', 'password'].forEach((id) => {
+  $(id).addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLaunch();
+  });
+});
+
+renderNews();
+
+updateClock();
+setInterval(updateClock, 1000);
+
+resizeCanvas();
+addEventListener('resize', resizeCanvas);
+initParticles();
+animateParticles();
 
 initPatcherStartup();
 </script>
