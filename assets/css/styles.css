@@ -377,41 +377,24 @@ html, body {
 }
 
 .news-card.has-media {
-  padding-right: 7.2rem;
+  padding-right: 7rem;
 }
 
 .news-card-media {
   position: absolute;
-  top: .38rem;
-  right: .55rem;
-  width: 34%;
-  height: 52%;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 58%;
   z-index: 0;
   pointer-events: none;
-  border-radius: 14px;
-  overflow: hidden;
+  border-radius: 0 0 0 18px;
   background-image: var(--news-card-image);
   background-size: cover;
   background-position: center top;
-  opacity: .95;
-}
-
-.news-card-media::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 92% 8%, rgba(14,19,40,0) 0%, rgba(14,19,40,.22) 36%, rgba(14,19,40,.62) 64%, rgba(14,19,40,.95) 100%),
-    linear-gradient(to left, rgba(14,19,40,.06) 38%, rgba(14,19,40,.45) 66%, rgba(14,19,40,.94) 100%);
-}
-
-.news-card-media::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  -webkit-mask-image: radial-gradient(155% 130% at 95% 5%, #000 36%, rgba(0,0,0,.72) 60%, rgba(0,0,0,.22) 82%, transparent 100%);
-  mask-image: radial-gradient(155% 130% at 95% 5%, #000 36%, rgba(0,0,0,.72) 60%, rgba(0,0,0,.22) 82%, transparent 100%);
-  background: linear-gradient(to left, rgba(14,19,40,0) 32%, rgba(14,19,40,.32) 64%, rgba(14,19,40,.9) 100%);
+  opacity: .72;
+  -webkit-mask-image: radial-gradient(150% 135% at 100% 0%, #000 28%, rgba(0,0,0,.7) 58%, rgba(0,0,0,.28) 80%, transparent 100%);
+  mask-image: radial-gradient(150% 135% at 100% 0%, #000 28%, rgba(0,0,0,.7) 58%, rgba(0,0,0,.28) 80%, transparent 100%);
 }
 
 .news-tag {
