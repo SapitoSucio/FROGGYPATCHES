@@ -1,2 +1,20 @@
-# Lista de parches vacía.
-# Los archivos .grf fueron retirados del repositorio.
+1 patch-test-01.grf
+2 patch-test-02.grf
+3 patch-test-03.grf
+4 patch-test-04.grf
+5 patch-test-05.grf
+6 patch-test-06.grf
+7 patch-test-07.grf
+8 patch-test-08.grf
+9 patch-test-09.grf
+10 patch-test-10.grf
+11 patch-test-11.grf
+12 patch-test-12.grf
+13 patch-test-13.grf
+14 patch-test-14.grf
+15 patch-test-15.grf
+16 patch-test-16.grf
+17 patch-test-17.grf
+18 patch-test-18.grf
+19 patch-test-19.grf
+20 patch-test-20.grf
