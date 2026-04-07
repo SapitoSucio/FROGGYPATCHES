@@ -387,7 +387,7 @@ function renderNews() {
       <div class="news-date">${formatNewsDate(item.createdAt)}</div>
       <div class="news-read-more">${i18n.t('readMore')}</div>`;
 
-    card.addEventListener('click', () => openModal(item, card));
+    card.addEventListener('click', () => openModal(item));
     frag.appendChild(card);
   });
 
@@ -397,8 +397,6 @@ function renderNews() {
 /* ================================================================
    MODAL — FLIP animation from card
    ================================================================ */
-let _modalOpenAnim = null;
-let _backdropOpenAnim = null;
 let _modalIsOpen = false;
 
 function setModalContent(newsItem) {
@@ -423,99 +421,16 @@ function setModalContent(newsItem) {
   dom.modalBody.scrollTop = 0;
 }
 
-function openModal(newsItem, cardEl) {
-  // Cancel any running animation
-  if (_modalOpenAnim) { try { _modalOpenAnim.cancel(); } catch (_) {} _modalOpenAnim = null; }
-  if (_backdropOpenAnim) { try { _backdropOpenAnim.cancel(); } catch (_) {} _backdropOpenAnim = null; }
-
+function openModal(newsItem) {
   setModalContent(newsItem);
-
-  // Reveal backdrop (pointer-events) — opacity starts at 0, JS will animate it
-  dom.backdrop.style.opacity = '0';
   dom.backdrop.classList.add('open');
-
-  // Force opacity=0 on modal before measuring
-  dom.modalEl.style.opacity = '0';
-  dom.modalEl.style.transform = 'none';
-
-  // Measure on the next frame (after layout)
-  requestAnimationFrame(() => {
-    const fromRect = cardEl.getBoundingClientRect();
-    const toRect = dom.modalEl.getBoundingClientRect();
-
-    // Avoid division by zero on degenerate rects
-    const scaleX = toRect.width  > 0 ? fromRect.width  / toRect.width  : 1;
-    const scaleY = toRect.height > 0 ? fromRect.height / toRect.height : 1;
-    const dx = (fromRect.left + fromRect.width  / 2) - (toRect.left + toRect.width  / 2);
-    const dy = (fromRect.top  + fromRect.height / 2) - (toRect.top  + toRect.height / 2);
-
-    const cardRadius = getComputedStyle(cardEl).borderRadius || '14px';
-
-    // Animate backdrop
-    _backdropOpenAnim = dom.backdrop.animate(
-      [{ opacity: 0 }, { opacity: 1 }],
-      { duration: 300, easing: 'ease', fill: 'forwards' }
-    );
-    _backdropOpenAnim.onfinish = () => {
-      dom.backdrop.style.opacity = '1';
-      _backdropOpenAnim = null;
-    };
-
-    // FLIP modal from card position to natural center position
-    dom.modalEl.style.opacity = '';
-    dom.modalEl.style.transform = '';
-
-    _modalOpenAnim = dom.modalEl.animate([
-      {
-        transform: `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`,
-        opacity: 0,
-        borderRadius: cardRadius
-      },
-      {
-        transform: 'translate(0, 0) scale(1)',
-        opacity: 1,
-        borderRadius: '20px'
-      }
-    ], {
-      duration: 480,
-      easing: 'cubic-bezier(0.34, 1.25, 0.64, 1)',
-      fill: 'forwards'
-    });
-
-    _modalOpenAnim.onfinish = () => {
-      _modalOpenAnim = null;
-    };
-
-    _modalIsOpen = true;
-  });
+  _modalIsOpen = true;
 }
 
 function closeModal() {
   if (!_modalIsOpen) return;
-
-  // Cancel any running open animation
-  if (_modalOpenAnim) { try { _modalOpenAnim.cancel(); } catch (_) {} _modalOpenAnim = null; }
-  if (_backdropOpenAnim) { try { _backdropOpenAnim.cancel(); } catch (_) {} _backdropOpenAnim = null; }
-
+  dom.backdrop.classList.remove('open');
   _modalIsOpen = false;
-
-  const closeBackdropAnim = dom.backdrop.animate(
-    [{ opacity: 1 }, { opacity: 0 }],
-    { duration: 240, easing: 'ease-in', fill: 'forwards' }
-  );
-
-  const closeModalAnim = dom.modalEl.animate([
-    { transform: 'scale(1)', opacity: 1, borderRadius: '20px' },
-    { transform: 'scale(0.92) translateY(16px)', opacity: 0, borderRadius: '14px' }
-  ], { duration: 210, easing: 'ease-in', fill: 'forwards' });
-
-  closeBackdropAnim.onfinish = () => {
-    dom.backdrop.classList.remove('open');
-    dom.backdrop.style.opacity = '';
-    // Clean up Web Animations fill:forwards state
-    try { closeModalAnim.cancel(); } catch (_) {}
-    try { closeBackdropAnim.cancel(); } catch (_) {}
-  };
 }
 
 /* ================================================================
