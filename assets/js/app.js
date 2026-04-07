@@ -539,6 +539,7 @@ function notificationInProgress() {
 
 function bindExternalLinks() {
   const DRAG_CLICK_THRESHOLD_PX = 3;
+  const NATIVE_DRAG_SUPPRESS_MS = 900;
   const links = document.querySelectorAll(
     '.topbar-nav a[href], .forgot-link[href], .btn-register[href]'
   );
@@ -585,6 +586,11 @@ function bindExternalLinks() {
     link.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
+      const lastNativeDragAt = Number(window.__rpatchurLastNativeDragAt || 0);
+      if (Number.isFinite(lastNativeDragAt) && (Date.now() - lastNativeDragAt) < NATIVE_DRAG_SUPPRESS_MS) {
+        dragged = false;
+        return;
+      }
       if (dragged) {
         dragged = false;
         return;
