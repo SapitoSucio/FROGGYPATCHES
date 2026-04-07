@@ -354,6 +354,8 @@ html, body {
 }
 
 .news-card {
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: rgba(14,19,40,.6);
@@ -367,6 +369,34 @@ html, body {
   border-color: var(--border-hover);
   background: rgba(20,27,53,.8);
   transform: translateX(4px);
+}
+
+.news-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.news-card.has-media {
+  padding-right: 8.8rem;
+}
+
+.news-card-media {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 48%;
+  height: 68%;
+  z-index: 0;
+  pointer-events: none;
+  border-bottom-left-radius: 20px;
+  background-image:
+    linear-gradient(125deg, rgba(14,19,40,.02) 0%, rgba(14,19,40,.42) 48%, rgba(14,19,40,.98) 100%),
+    linear-gradient(to left, rgba(14,19,40,.1) 20%, rgba(14,19,40,.85) 84%),
+    linear-gradient(to bottom, rgba(14,19,40,0) 35%, rgba(14,19,40,.9) 100%),
+    var(--news-card-image);
+  background-size: cover;
+  background-position: center top;
+  opacity: .9;
 }
 
 .news-tag {
@@ -921,6 +951,20 @@ html, body {
   margin-top: .75rem;
 }
 
+.modal-news-figure {
+  margin: 0 0 1rem 0;
+}
+
+.modal-news-image {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 12px;
+  border: 1px solid rgba(200,168,75,.25);
+  box-shadow: 0 10px 26px rgba(0,0,0,.28);
+}
+
 .modal-close {
   position: absolute;
   top: 1rem;
@@ -984,3 +1028,31 @@ html, body {
     transform: none;
   }
 }
+
+/* === Vanaheim news bullets === */
+.news-bullet-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.4rem 0 0.9rem 0;
+}
+
+.news-bullet-item {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  margin: 0 0 .45rem 0;
+}
+
+.news-bullet-mark {
+  flex: 0 0 auto;
+  color: var(--gold-light);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.65;
+}
+
+.news-bullet-text {
+  display: block;
+  line-height: 1.65;
+}
+/* === /Vanaheim news bullets === */

@@ -70,6 +70,40 @@ function getTagLabel(tag) {
   return TAG_LABELS[tag] || 'Noticia';
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function normalizeImageUrl(value) {
+  if (typeof value !== 'string') return '';
+  return value.trim();
+}
+
+function getCardImage(item) {
+  return normalizeImageUrl(item.cardImage || item.image);
+}
+
+function getModalImages(item) {
+  const list = [];
+
+  if (Array.isArray(item.images)) {
+    item.images.forEach((img) => {
+      const normalized = normalizeImageUrl(img);
+      if (normalized) list.push(normalized);
+    });
+  } else {
+    const single = normalizeImageUrl(item.image);
+    if (single) list.push(single);
+  }
+
+  return list;
+}
+
 function renderNews() {
   const news = getNewsData();
   dom.newsList.innerHTML = '';
@@ -92,8 +126,14 @@ function renderNews() {
     const card = document.createElement('div');
     card.className = 'news-card';
     card.style.animationDelay = `${index * 0.055}s`;
+    const cardImage = getCardImage(item);
+
+    if (cardImage) {
+      card.classList.add('has-media');
+    }
 
     card.innerHTML = `
+      ${cardImage ? `<div class="news-card-media" style="--news-card-image: url('${cardImage.replace(/'/g, '%27')}');"></div>` : ''}
       <div class="news-tag ${item.tag}">${getTagLabel(item.tag)}</div>
       <h3>${item.title}</h3>
       <p>${item.excerpt}</p>
@@ -109,10 +149,17 @@ function renderNews() {
 }
 
 function openModal(newsItem) {
+  const modalImages = getModalImages(newsItem);
+  const imagesMarkup = modalImages.map((imageUrl, index) => `
+    <figure class="modal-news-figure">
+      <img class="modal-news-image" src="${escapeHtml(imageUrl)}" alt="Imagen ${index + 1} de ${escapeHtml(newsItem.title || 'noticia')}">
+    </figure>
+  `).join('');
+
   dom.modalTag.innerHTML = `<span class="news-tag ${newsItem.tag}">${getTagLabel(newsItem.tag)}</span>`;
   dom.modalTitle.textContent = newsItem.title;
   dom.modalDate.textContent = formatNewsDate(newsItem.createdAt);
-  dom.modalBody.innerHTML = newsItem.body || '';
+  dom.modalBody.innerHTML = `${imagesMarkup}${newsItem.body || ''}`;
   dom.modalBody.scrollTop = 0;
   dom.backdrop.classList.add('open');
 }

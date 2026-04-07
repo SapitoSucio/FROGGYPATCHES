@@ -6,6 +6,10 @@ window.NEWS_DATA = [
     excerpt: 'Se añaden dos nuevas mazmorras de instancia en Eclage con drops exclusivos y equipo épico nivel 4.',
     createdAt: '2026-04-06T09:00:00-06:00',
     published: true,
+    cardImage: 'https://blog.gravityus.com/wp-content/uploads/2012/06/rosdposter02.png',
+    images: [
+      'https://blog.gravityus.com/wp-content/uploads/2012/06/rosdposter02.png'
+    ],
     body: `
       <p>El parche 2.4.1 introduce dos nuevas mazmorras de instancia ambientadas en el reino aéreo de Eclage. Diseñadas para grupos de 5 a 12 jugadores de nivel 185+.</p>
       <p class="modal-detail"><strong style="color:var(--gold-dim)">Nuevas instancias:</strong><br>
