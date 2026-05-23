@@ -54,7 +54,15 @@ const TRANSLATIONS = {
     optionsTitle: 'Opciones', optTheme: 'Tema', optLang: 'Idioma',
     themeDark: 'Oscuro', themeLight: 'Claro',
     VanatoolsTitle: 'Vana Tools', ntWiki: 'Wiki', ntFluxCP: 'Control Panel',
-    ntDiscord: 'Discord', ntStats: 'Estadísticas'
+    ntDiscord: 'Discord', ntStats: 'Estadísticas',
+    srhTitle: 'SimpleROHook', srhLoading: 'Cargando configuración...',
+    srhReady: 'Configuración cargada.', srhDirty: '{n} cambio(s) sin guardar.',
+    srhSaved: 'Configuración guardada.', srhReload: 'Recargar',
+    srhReset: 'Revertir cambios', srhSave: 'Guardar',
+    srhNoBridge: 'Esta vista no tiene bridge del launcher.',
+    srhEmpty: 'No hay opciones en esta sección.',
+    srhLoadError: 'No se pudo leer simplerohook.ini: {msg}',
+    srhSaveError: 'No se pudo guardar simplerohook.ini: {msg}'
   },
   en: {
     tagUpdate: 'Update', tagEvent: 'Event', tagMaint: 'Maintenance', tagNews: 'News',
@@ -106,7 +114,15 @@ const TRANSLATIONS = {
     optionsTitle: 'Options', optTheme: 'Theme', optLang: 'Language',
     themeDark: 'Dark', themeLight: 'Light',
     VanatoolsTitle: 'Vana Tools', ntWiki: 'Wiki', ntFluxCP: 'Control Panel',
-    ntDiscord: 'Discord', ntStats: 'Statistics'
+    ntDiscord: 'Discord', ntStats: 'Statistics',
+    srhTitle: 'SimpleROHook', srhLoading: 'Loading configuration...',
+    srhReady: 'Configuration loaded.', srhDirty: '{n} unsaved change(s).',
+    srhSaved: 'Configuration saved.', srhReload: 'Reload',
+    srhReset: 'Revert changes', srhSave: 'Save',
+    srhNoBridge: 'This view has no launcher bridge.',
+    srhEmpty: 'There are no options in this section.',
+    srhLoadError: 'Could not read simplerohook.ini: {msg}',
+    srhSaveError: 'Could not save simplerohook.ini: {msg}'
   }
 };
 
@@ -280,7 +296,17 @@ const dom = {
   panelVanatools: $('panel-Vanatools'),
   btnOptions: $('btn-options'),
   btnVanatools: $('btn-Vanatools'),
-  themeToggleInput: $('theme-toggle-input')
+  themeToggleInput: $('theme-toggle-input'),
+  btnSrhConfig: $('btn-srh-config'),
+  srhBackdrop: $('srh-backdrop'),
+  srhClose: $('srh-close'),
+  srhPath: $('srh-path'),
+  srhStatus: $('srh-status'),
+  srhSections: $('srh-sections'),
+  srhSettings: $('srh-settings'),
+  srhReload: $('srh-reload'),
+  srhReset: $('srh-reset'),
+  srhSave: $('srh-save')
 };
 
 const state = {
@@ -821,7 +847,19 @@ const bridge = {
   },
 
   cmd(command) { return this.invoke(command); },
-  json(fn, parameters) { return this.invoke({ function: fn, parameters }); }
+  json(fn, parameters) { return this.invoke({ function: fn, parameters }); },
+
+  request(fn, parameters = {}) {
+    if (!this.has()) return Promise.resolve({ ok: false, error: i18n.t('srhNoBridge') });
+    try {
+      const req = JSON.stringify({ function: fn, parameters });
+      return Promise.resolve(window.external.invoke(req))
+        .then(result => result || { ok: true })
+        .catch(err => ({ ok: false, error: String(err) }));
+    } catch (err) {
+      return Promise.resolve({ ok: false, error: String(err) });
+    }
+  }
 };
 
 /* ================================================================
@@ -1075,6 +1113,224 @@ function bindExternalLinks() {
 }
 
 /* ================================================================
+   SIMPLEROHOOK CONFIG EDITOR
+   ================================================================ */
+const srhEditor = {
+  path: '',
+  sections: [],
+  activeSection: '',
+  original: new Map(),
+  values: new Map(),
+  dirty: new Set(),
+
+  key(section, key) {
+    return `${section}\u0000${key}`;
+  },
+
+  open() {
+    closePanels();
+    dom.srhBackdrop.classList.add('open');
+    dom.btnSrhConfig.classList.add('panel-active');
+    _modalIsOpen = true;
+    updateParticleRuntime();
+    if (!this.sections.length) this.load();
+    else this.render();
+  },
+
+  close() {
+    dom.srhBackdrop.classList.remove('open');
+    dom.btnSrhConfig.classList.remove('panel-active');
+    _modalIsOpen = false;
+    updateParticleRuntime();
+  },
+
+  async load() {
+    this.setStatus(i18n.t('srhLoading'), 'info');
+    this.setBusy(true);
+    const result = await bridge.request('read_simplerohook_config');
+    this.setBusy(false);
+
+    if (!result.ok) {
+      this.sections = [];
+      this.activeSection = '';
+      this.setStatus(i18n.t('srhLoadError', { msg: result.error || 'unknown' }), 'warn');
+      this.render();
+      return;
+    }
+
+    this.path = result.path || 'simplerohook.ini';
+    this.sections = result.config?.sections || [];
+    this.activeSection = this.sections[0]?.name || '';
+    this.original = new Map();
+    this.values = new Map();
+    this.dirty = new Set();
+
+    this.sections.forEach(section => {
+      section.entries.forEach(entry => {
+        const id = this.key(section.name, entry.key);
+        this.original.set(id, entry.value);
+        this.values.set(id, entry.value);
+      });
+    });
+
+    this.setStatus(i18n.t('srhReady'), 'ok');
+    this.render();
+  },
+
+  async save() {
+    const updates = Array.from(this.dirty).map(id => {
+      const [section, key] = id.split('\u0000');
+      return { section, key, value: this.values.get(id) || '' };
+    });
+    if (!updates.length) return;
+
+    this.setBusy(true);
+    const result = await bridge.request('write_simplerohook_config', { updates });
+    this.setBusy(false);
+
+    if (!result.ok) {
+      this.setStatus(i18n.t('srhSaveError', { msg: result.error || 'unknown' }), 'warn');
+      showToast(i18n.t('srhSaveError', { msg: result.error || 'unknown' }), '⚠');
+      return;
+    }
+
+    updates.forEach(update => {
+      this.original.set(this.key(update.section, update.key), update.value);
+    });
+    this.dirty.clear();
+    this.setStatus(i18n.t('srhSaved'), 'ok');
+    showToast(i18n.t('srhSaved'), '✦');
+    this.render();
+  },
+
+  reset() {
+    this.values = new Map(this.original);
+    this.dirty.clear();
+    this.setStatus(i18n.t('srhReady'), 'ok');
+    this.render();
+  },
+
+  setBusy(isBusy) {
+    dom.srhReload.disabled = isBusy;
+    dom.srhReset.disabled = isBusy;
+    dom.srhSave.disabled = isBusy;
+  },
+
+  setStatus(text, type = 'info') {
+    dom.srhStatus.textContent = text;
+    dom.srhStatus.className = `srh-status ${type}`;
+  },
+
+  updateDirtyState(id, value) {
+    this.values.set(id, value);
+    if (value === this.original.get(id)) this.dirty.delete(id);
+    else this.dirty.add(id);
+    if (this.dirty.size) this.setStatus(i18n.t('srhDirty', { n: this.dirty.size }), 'warn');
+    else this.setStatus(i18n.t('srhReady'), 'ok');
+    dom.srhSave.disabled = this.dirty.size === 0;
+  },
+
+  render() {
+    dom.srhPath.textContent = this.path || 'simplerohook.ini';
+    this.renderSections();
+    this.renderSettings();
+    dom.srhSave.disabled = this.dirty.size === 0;
+  },
+
+  renderSections() {
+    dom.srhSections.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    this.sections.forEach(section => {
+      const btn = document.createElement('button');
+      btn.className = 'srh-section-btn';
+      btn.classList.toggle('active', section.name === this.activeSection);
+      btn.type = 'button';
+      btn.textContent = section.name;
+      btn.addEventListener('click', () => {
+        this.activeSection = section.name;
+        this.render();
+      });
+      frag.appendChild(btn);
+    });
+    dom.srhSections.appendChild(frag);
+  },
+
+  renderSettings() {
+    dom.srhSettings.innerHTML = '';
+    const section = this.sections.find(item => item.name === this.activeSection);
+    if (!section) return;
+    if (!section.entries.length) {
+      const empty = document.createElement('div');
+      empty.className = 'srh-empty';
+      empty.textContent = i18n.t('srhEmpty');
+      dom.srhSettings.appendChild(empty);
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    section.entries.forEach(entry => {
+      const id = this.key(section.name, entry.key);
+      const value = this.values.get(id) ?? entry.value ?? '';
+      const row = document.createElement('label');
+      row.className = `srh-setting srh-setting-${entry.value_type || 'text'}`;
+
+      const name = document.createElement('span');
+      name.className = 'srh-setting-name';
+      name.textContent = entry.key;
+      row.appendChild(name);
+
+      row.appendChild(this.createControl(id, entry, value));
+      frag.appendChild(row);
+    });
+    dom.srhSettings.appendChild(frag);
+  },
+
+  createControl(id, entry, value) {
+    if (entry.value_type === 'bool') {
+      const wrap = document.createElement('span');
+      wrap.className = 'srh-switch';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.checked = value === '1';
+      input.addEventListener('change', () => this.updateDirtyState(id, input.checked ? '1' : '0'));
+      const track = document.createElement('span');
+      track.className = 'srh-switch-track';
+      wrap.append(input, track);
+      return wrap;
+    }
+
+    const wrap = document.createElement('span');
+    wrap.className = 'srh-control-wrap';
+    if (entry.value_type === 'color') {
+      const swatch = document.createElement('span');
+      swatch.className = 'srh-color-swatch';
+      swatch.style.background = this.toCssColor(value);
+      wrap.appendChild(swatch);
+    }
+
+    const input = document.createElement('input');
+    input.className = 'srh-input';
+    input.type = entry.value_type === 'number' ? 'number' : 'text';
+    input.value = value;
+    input.spellcheck = false;
+    input.addEventListener('input', () => {
+      if (entry.value_type === 'color') {
+        const swatch = wrap.querySelector('.srh-color-swatch');
+        if (swatch) swatch.style.background = this.toCssColor(input.value);
+      }
+      this.updateDirtyState(id, input.value);
+    });
+    wrap.appendChild(input);
+    return wrap;
+  },
+
+  toCssColor(value) {
+    const match = /^0x[0-9a-fA-F]{8}$/.exec(value || '');
+    return match ? `#${value.slice(4)}` : 'transparent';
+  }
+};
+
+/* ================================================================
    EXPOSE globals for patcher
    ================================================================ */
 window.patchingStatusReady               = patchingStatusReady;
@@ -1104,6 +1360,12 @@ dom.backdrop.addEventListener('click', e => { if (e.target === dom.backdrop) clo
 // Panels: gear + star
 dom.btnOptions.addEventListener('click', e => { e.stopPropagation(); openPanel('options'); });
 dom.btnVanatools.addEventListener('click', e => { e.stopPropagation(); openPanel('Vanatools'); });
+dom.btnSrhConfig.addEventListener('click', e => { e.stopPropagation(); srhEditor.open(); });
+dom.srhClose.addEventListener('click', () => srhEditor.close());
+dom.srhReload.addEventListener('click', () => srhEditor.load());
+dom.srhReset.addEventListener('click', () => srhEditor.reset());
+dom.srhSave.addEventListener('click', () => srhEditor.save());
+dom.srhBackdrop.addEventListener('click', e => { if (e.target === dom.srhBackdrop) srhEditor.close(); });
 
 // Close panels on outside click
 document.addEventListener('click', e => {
@@ -1140,6 +1402,7 @@ dom.btnLaunch.addEventListener('click', handleLaunch);
 // Escape: close modal or panels
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (dom.srhBackdrop.classList.contains('open')) { srhEditor.close(); return; }
     if (_modalIsOpen) { closeModal(); return; }
     closePanels();
   }

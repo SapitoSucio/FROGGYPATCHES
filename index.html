@@ -55,6 +55,13 @@
           </svg>
         </button>
 
+        <!-- SimpleROHook config -->
+        <button class="icon-btn icon-btn-config" id="btn-srh-config" title="SimpleROHook">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11zm2 0v11c0 .28.22.5.5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0-.5.5zM8 8h8v2H8V8zm0 3h5v2H8v-2zm0 3h7v2H8v-2z"/>
+          </svg>
+        </button>
+
         <!-- Theme toggle -->
         <label class="theme-toggle" title="Cambiar tema">
           <input type="checkbox" id="theme-toggle-input">
@@ -277,6 +284,29 @@
       <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
       <span data-i18n="ntStats">Estadísticas</span>
     </button>
+  </div>
+
+  <!-- SIMPLEROHOOK CONFIG -->
+  <div class="srh-backdrop" id="srh-backdrop" data-no-window-drag>
+    <section class="srh-editor" aria-label="SimpleROHook">
+      <header class="srh-header">
+        <div>
+          <div class="srh-title" data-i18n="srhTitle">SimpleROHook</div>
+          <div class="srh-path" id="srh-path">simplerohook.ini</div>
+        </div>
+        <button class="modal-close" id="srh-close" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="srh-status" id="srh-status" data-i18n="srhLoading">Cargando configuración...</div>
+      <div class="srh-body">
+        <aside class="srh-sections" id="srh-sections"></aside>
+        <main class="srh-settings" id="srh-settings"></main>
+      </div>
+      <footer class="srh-actions">
+        <button class="srh-action" id="srh-reload" data-i18n="srhReload">Recargar</button>
+        <button class="srh-action" id="srh-reset" data-i18n="srhReset">Revertir cambios</button>
+        <button class="srh-action srh-action-primary" id="srh-save" data-i18n="srhSave">Guardar</button>
+      </footer>
+    </section>
   </div>
 
   <!-- MODAL -->
