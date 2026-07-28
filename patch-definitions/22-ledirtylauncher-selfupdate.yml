@@ -5,3 +5,6 @@ entries:
   - relative_path: LeDirtyLauncher.exe
     is_removed: false
     in_grf_path: null
+  - relative_path: LeDirtyLauncher/rpatchur-updater.exe
+    is_removed: false
+    in_grf_path: null
