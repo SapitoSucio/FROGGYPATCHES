@@ -1,0 +1,7 @@
+include_checksums: true
+use_grf_merging: false
+target_grf_name: null
+entries:
+  - relative_path: LeDirtyLauncher.exe
+    is_removed: false
+    in_grf_path: null

@@ -19,3 +19,4 @@
 19 patch-test-19.grf
 20 patch-test-20.grf
 21 21-ledirtylauncher-selfupdate.thor
+22 22-ledirtylauncher-selfupdate.thor
